@@ -8,6 +8,6 @@ export class AuthDtos {
 
   @IsNotEmpty()
   @IsString()
-  @MinLength(7)
+  @MinLength(8)
   password: string;
 }

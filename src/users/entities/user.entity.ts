@@ -21,6 +21,8 @@ export class User {
 
   @Column({
     type: 'varchar',
+    nullable: true,
+    default: null,
     length: 255,
   })
   name: string;

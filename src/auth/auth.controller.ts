@@ -1,7 +1,6 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthDtos } from './dto/auth.dto';
-import { JwtAuthGuard } from './guard/jwt-auth.gurad';
 
 @Controller({
   path: 'auth',

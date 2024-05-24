@@ -10,9 +10,9 @@ import {
 import { Gender } from 'src/utils/enums/gender.enum';
 
 export class CreateUserDto {
-  @IsNotEmpty()
   @IsString()
   @MinLength(3)
+  @IsOptional()
   name: string;
 
   @IsString()

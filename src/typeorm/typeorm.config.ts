@@ -24,7 +24,7 @@ const config: PostgresConnectionOptions = {
     Favorite,
     InterestedCategory,
   ],
-  synchronize: false,
+  synchronize: true,
 };
 
 export default config;
