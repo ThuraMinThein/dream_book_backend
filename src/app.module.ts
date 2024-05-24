@@ -11,9 +11,13 @@ import { InterestedCategoriesModule } from './interested-categories/interested-c
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import config from './typeorm/typeorm.config';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     TypeOrmModule.forRoot(config),
     UsersModule,
     BooksModule,

@@ -53,7 +53,9 @@ export class Chapter {
 
   //relationship
   //many chapters can be owned by a book
-  @ManyToOne(() => Book, (book) => book.chapters)
+  @ManyToOne(() => Book, (book) => book.chapters, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'book_id', referencedColumnName: 'bookId' })
-  bookId: Book;
+  book: Book;
 }

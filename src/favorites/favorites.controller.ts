@@ -11,7 +11,7 @@ import {
 import { FavoritesService } from './favorites.service';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { UpdateFavoriteDto } from './dto/update-favorite.dto';
-import { TypeormExceptionFilter } from 'src/exceptionfilters/typeorm-exception.filter';
+import { TypeormExceptionFilter } from 'src/common/filters/exceptionfilters/typeorm-exception.filter';
 
 @Controller({
   path: 'favorites',

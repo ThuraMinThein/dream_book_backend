@@ -20,7 +20,9 @@ export class InterestedCategory {
   categoryId: number;
 
   //relationships
-  @ManyToOne(() => User, (user) => user.interestedCategories)
+  @ManyToOne(() => User, (user) => user.interestedCategories, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'user_id', referencedColumnName: 'userId' })
   user: User;
 

@@ -11,12 +11,16 @@ export class Favorite {
   bookId: number;
 
   //many books can be favorited by one user
-  @ManyToOne(() => User, (user) => user.favorites)
+  @ManyToOne(() => User, (user) => user.favorites, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'user_id', referencedColumnName: 'userId' })
   user: User;
 
   //a books can have many favorites
-  @ManyToOne(() => Book, (book) => book.favorites)
+  @ManyToOne(() => Book, (book) => book.favorites, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'book_id', referencedColumnName: 'bookId' })
   book: Book;
 }

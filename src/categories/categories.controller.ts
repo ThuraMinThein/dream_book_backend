@@ -11,7 +11,7 @@ import {
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-import { TypeormExceptionFilter } from 'src/exceptionfilters/typeorm-exception.filter';
+import { TypeormExceptionFilter } from 'src/common/filters/exceptionfilters/typeorm-exception.filter';
 
 @Controller({
   path: 'categories',

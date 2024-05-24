@@ -7,11 +7,15 @@ import {
   Param,
   Delete,
   UseFilters,
+  UseInterceptors,
+  ClassSerializerInterceptor,
+  SerializeOptions,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { TypeormExceptionFilter } from 'src/exceptionfilters/typeorm-exception.filter';
+import { TypeormExceptionFilter } from 'src/common/filters/exceptionfilters/typeorm-exception.filter';
+import { GROUP_USER } from 'src/utils/serializers/group.serializer';
 
 @Controller({
   path: 'users',
@@ -21,28 +25,34 @@ import { TypeormExceptionFilter } from 'src/exceptionfilters/typeorm-exception.f
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
-  }
-
   @Get()
-  findAll() {
+  @UseInterceptors(ClassSerializerInterceptor)
+  @SerializeOptions({ groups: [GROUP_USER] })
+  findAll(): Promise<any> {
     return this.usersService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  @UseInterceptors(ClassSerializerInterceptor)
+  @SerializeOptions({ groups: [GROUP_USER] })
+  findOne(@Param('id') id: string): Promise<any> {
     return this.usersService.findOne(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  @UseInterceptors(ClassSerializerInterceptor)
+  @SerializeOptions({ groups: [GROUP_USER] })
+  update(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto,
+  ): Promise<any> {
     return this.usersService.update(+id, updateUserDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  @UseInterceptors(ClassSerializerInterceptor)
+  @SerializeOptions({ groups: [GROUP_USER] })
+  remove(@Param('id') id: string): Promise<any> {
     return this.usersService.remove(+id);
   }
 }

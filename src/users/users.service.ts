@@ -26,22 +26,35 @@ export class UsersService {
     if (user) throw new ConflictException('Email already exists');
   }
 
-  //services
-
-  async create(createUserDto: CreateUserDto) {
-    //check if emial exists or not
-    await this.hasEmail(createUserDto.email);
-
-    //create new user
-    const newUser = this.usersRepository.create(createUserDto);
-    return this.usersRepository.save(newUser);
+  async findUserWithEmail(email: string) {
+    return this.usersRepository.findOne({
+      where: {
+        email,
+      },
+    });
   }
 
-  async findAll() {
+  //services
+
+  // async create(createUserDto: CreateUserDto) {
+  //   const { password } = createUserDto;
+
+  //   //check if emial exists or not
+  //   await this.hasEmail(createUserDto.email);
+
+  //   //hash password
+  //   createUserDto.password = await this.hashPassword(password);
+
+  //   //create new user
+  //   const newUser = this.usersRepository.create(createUserDto);
+  //   return this.usersRepository.save(newUser);
+  // }
+
+  async findAll(): Promise<any> {
     return this.usersRepository.find();
   }
 
-  async findOne(id: number) {
+  async findOne(id: number): Promise<any> {
     const user = await this.usersRepository.findOne({
       where: {
         userId: id,
@@ -51,9 +64,8 @@ export class UsersService {
     return user;
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto) {
+  async update(id: number, updateUserDto: UpdateUserDto): Promise<any> {
     const user = await this.findOne(id);
-    if (!user) throw new NotFoundException('User not found');
 
     // const updatedUser = this.usersRepository.merge(user, updateUserDto);
     const updatedUser = this.usersRepository.create({
@@ -63,10 +75,9 @@ export class UsersService {
     return this.usersRepository.save(updatedUser);
   }
 
-  async remove(id: number) {
+  async remove(id: number): Promise<any> {
     const user = await this.findOne(id);
-    if (!user) throw new NotFoundException('User not found');
-    await this.usersRepository.softDelete(id);
+    await this.usersRepository.delete(id);
     return user;
   }
 }

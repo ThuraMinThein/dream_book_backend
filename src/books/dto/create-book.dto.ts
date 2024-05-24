@@ -1,4 +1,11 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { Status } from 'src/utils/enums/status.enum';
 
 export class CreateBookDto {
@@ -18,7 +25,7 @@ export class CreateBookDto {
   @IsNotEmpty()
   slug: string;
 
-  @IsString()
+  @IsArray()
   @IsNotEmpty()
   keywords: string[];
 

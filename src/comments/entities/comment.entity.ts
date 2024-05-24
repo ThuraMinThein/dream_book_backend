@@ -24,12 +24,16 @@ export class Comment {
 
   //relationships
   //many comments can be created by one user
-  @ManyToOne(() => User, (user) => user.comments)
+  @ManyToOne(() => User, (user) => user.comments, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'user_id', referencedColumnName: 'userId' })
   userId: User;
 
   //a book can have many comments
-  @ManyToOne(() => Book, (book) => book.comments)
+  @ManyToOne(() => Book, (book) => book.comments, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'book_id', referencedColumnName: 'bookId' })
   bookId: Book;
 }

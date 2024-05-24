@@ -73,14 +73,14 @@ export class Book {
 
   //relationships
   //many books can be created by a user
-  @ManyToOne(() => User, (user) => user.createdBooks)
+  @ManyToOne(() => User, (user) => user.createdBooks, {
+    onDelete: 'SET NULL',
+  })
   @JoinColumn({ name: 'user_id', referencedColumnName: 'userId' })
-  userId: User;
+  user: User;
 
   //a book can have many chapters
-  @OneToMany(() => Chapter, (chapter) => chapter.bookId, {
-    onDelete: 'CASCADE',
-  })
+  @OneToMany(() => Chapter, (chapter) => chapter.book)
   chapters: Chapter[];
 
   //many books can have many categories
@@ -89,14 +89,10 @@ export class Book {
   category: Category;
 
   //one book can have many favorites
-  @OneToMany(() => Favorite, (favorite) => favorite.bookId, {
-    onDelete: 'CASCADE',
-  })
+  @OneToMany(() => Favorite, (favorite) => favorite.bookId)
   favorites: Favorite[];
 
   //a book can have many comments
-  @OneToMany(() => Comment, (comments) => comments.bookId, {
-    onDelete: 'CASCADE',
-  })
+  @OneToMany(() => Comment, (comments) => comments.bookId)
   comments: Comment[];
 }

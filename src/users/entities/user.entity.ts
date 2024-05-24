@@ -75,30 +75,21 @@ export class User {
 
   //relationships
   //a user can create many books
-  @OneToMany(() => Book, (book) => book.userId, {
-    onDelete: 'SET NULL',
-  })
+  @OneToMany(() => Book, (book) => book.user)
   createdBooks: Book[];
 
   //a user can have many categories
   @OneToMany(
     () => InterestedCategory,
     (interestedCategory) => interestedCategory.userId,
-    {
-      onDelete: 'CASCADE',
-    },
   )
   interestedCategories: InterestedCategory[];
 
   //a user can have man favorite books
-  @OneToMany(() => Favorite, (favorite) => favorite.user, {
-    onDelete: 'CASCADE',
-  })
+  @OneToMany(() => Favorite, (favorite) => favorite.user)
   favorites: Favorite[];
 
   //a user can have many comments
-  @OneToMany(() => Comment, (comments) => comments.userId, {
-    onDelete: 'CASCADE',
-  })
+  @OneToMany(() => Comment, (comments) => comments.userId)
   comments: Comment[];
 }
