@@ -12,6 +12,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import config from './typeorm/typeorm.config';
 import { ConfigModule } from '@nestjs/config';
+import { ChapterProgressModule } from './chapter-progress/chapter-progress.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { ConfigModule } from '@nestjs/config';
     CommentsModule,
     InterestedCategoriesModule,
     AuthModule,
+    ChapterProgressModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import {
   IsArray,
   IsEnum,
@@ -31,4 +32,9 @@ export class CreateBookDto {
 
   @IsEnum(Status)
   status: Status;
+
+  @IsNotEmpty()
+  @IsNumber()
+  @Transform(({ obj, key }) => parseInt(obj[key]))
+  categoryId: number;
 }

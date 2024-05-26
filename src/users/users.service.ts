@@ -3,17 +3,74 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/User.entity';
 import { Repository } from 'typeorm';
+import { CloudinaryService } from 'src/common/services/cloudinary/cloudinary.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private usersRepository: Repository<User>,
+    private cloudinaryService: CloudinaryService,
   ) {}
+
+  //services
+
+  async findAll(): Promise<User[]> {
+    return this.usersRepository.find();
+  }
+
+  async findOne(id: number): Promise<User> {
+    const user = await this.usersRepository.findOne({
+      where: {
+        userId: id,
+      },
+    });
+    if (!user) throw new NotFoundException('User not found');
+    return user;
+  }
+
+  async update(
+    id: number,
+    newProfilePicture: Express.Multer.File,
+    updateUserDto: UpdateUserDto,
+  ): Promise<User> {
+    const user = await this.findOne(id);
+
+    //if the user wants to change the image, replace image in cloudinary with new and old image
+    let profilePicture = user.profilePicture;
+    if (newProfilePicture) {
+      const { url } = await this.cloudinaryService.storeImage(
+        newProfilePicture,
+        'user-profile-pictures',
+      );
+      profilePicture = url;
+
+      //delete old image in cloudinary if there is an image exists
+      if (user.profilePicture)
+        await this.cloudinaryService.deleteImage(user.profilePicture);
+    }
+
+    //update user
+    const updatedUser = this.usersRepository.create({
+      ...user,
+      ...updateUserDto,
+      profilePicture,
+    });
+    return this.usersRepository.save(updatedUser);
+  }
+
+  async remove(id: number): Promise<User> {
+    const user = await this.findOne(id);
+
+    //delete image in cloudinary if there is an image
+    if (user.profilePicture)
+      await this.cloudinaryService.deleteImage(user.profilePicture);
+    await this.usersRepository.delete(id); //delete user
+    return user;
+  }
 
   //functions
 
@@ -32,52 +89,5 @@ export class UsersService {
         email,
       },
     });
-  }
-
-  //services
-
-  // async create(createUserDto: CreateUserDto) {
-  //   const { password } = createUserDto;
-
-  //   //check if emial exists or not
-  //   await this.hasEmail(createUserDto.email);
-
-  //   //hash password
-  //   createUserDto.password = await this.hashPassword(password);
-
-  //   //create new user
-  //   const newUser = this.usersRepository.create(createUserDto);
-  //   return this.usersRepository.save(newUser);
-  // }
-
-  async findAll(): Promise<any> {
-    return this.usersRepository.find();
-  }
-
-  async findOne(id: number): Promise<any> {
-    const user = await this.usersRepository.findOne({
-      where: {
-        userId: id,
-      },
-    });
-    if (!user) throw new NotFoundException('User not found');
-    return user;
-  }
-
-  async update(id: number, updateUserDto: UpdateUserDto): Promise<any> {
-    const user = await this.findOne(id);
-
-    // const updatedUser = this.usersRepository.merge(user, updateUserDto);
-    const updatedUser = this.usersRepository.create({
-      ...user,
-      ...updateUserDto,
-    });
-    return this.usersRepository.save(updatedUser);
-  }
-
-  async remove(id: number): Promise<any> {
-    const user = await this.findOne(id);
-    await this.usersRepository.delete(id);
-    return user;
   }
 }

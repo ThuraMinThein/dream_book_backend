@@ -31,15 +31,10 @@ export class Category {
   @OneToMany(
     () => InterestedCategory,
     (interestedCategory) => interestedCategory.category,
-    {
-      onDelete: 'CASCADE',
-    },
   )
   interestedCategories: InterestedCategory[];
 
   //many books can have a category
-  @OneToMany(() => Book, (book) => book.category, {
-    onDelete: 'SET NULL',
-  })
+  @OneToMany(() => Book, (book) => book.category)
   books: Book[];
 }

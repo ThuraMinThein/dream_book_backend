@@ -8,10 +8,6 @@ import {
 import { Status } from 'src/utils/enums/status.enum';
 
 export class CreateChapterDto {
-  @IsNumber()
-  @IsOptional()
-  chapterProgress: number;
-
   @IsString()
   @IsNotEmpty()
   title: string;

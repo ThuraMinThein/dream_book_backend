@@ -16,9 +16,6 @@ export class Chapter {
   @PrimaryGeneratedColumn({ name: 'chapter_id' })
   chapterId: number;
 
-  @Column({ name: 'chapter_progress', default: 0 })
-  chapterProgress: number;
-
   @Column({
     type: 'varchar',
     length: 255,

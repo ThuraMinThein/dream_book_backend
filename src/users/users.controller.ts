@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  Post,
   Body,
   Patch,
   Param,
@@ -10,12 +9,14 @@ import {
   UseInterceptors,
   ClassSerializerInterceptor,
   SerializeOptions,
+  UploadedFile,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { TypeormExceptionFilter } from 'src/common/filters/exceptionfilters/typeorm-exception.filter';
 import { GROUP_USER } from 'src/utils/serializers/group.serializer';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { User } from './entities/User.entity';
 
 @Controller({
   path: 'users',
@@ -28,31 +29,33 @@ export class UsersController {
   @Get()
   @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({ groups: [GROUP_USER] })
-  findAll(): Promise<any> {
+  async findAll(): Promise<User[]> {
     return this.usersService.findAll();
   }
 
   @Get(':id')
   @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({ groups: [GROUP_USER] })
-  findOne(@Param('id') id: string): Promise<any> {
+  async findOne(@Param('id') id: string): Promise<User> {
     return this.usersService.findOne(+id);
   }
 
   @Patch(':id')
   @UseInterceptors(ClassSerializerInterceptor)
+  @UseInterceptors(FileInterceptor('profilePicture'))
   @SerializeOptions({ groups: [GROUP_USER] })
-  update(
+  async update(
     @Param('id') id: string,
+    @UploadedFile() profilePicture: Express.Multer.File,
     @Body() updateUserDto: UpdateUserDto,
-  ): Promise<any> {
-    return this.usersService.update(+id, updateUserDto);
+  ): Promise<User> {
+    return this.usersService.update(+id, profilePicture, updateUserDto);
   }
 
   @Delete(':id')
   @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({ groups: [GROUP_USER] })
-  remove(@Param('id') id: string): Promise<any> {
+  async remove(@Param('id') id: string): Promise<User> {
     return this.usersService.remove(+id);
   }
 }

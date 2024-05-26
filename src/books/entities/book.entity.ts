@@ -84,7 +84,9 @@ export class Book {
   chapters: Chapter[];
 
   //many books can have many categories
-  @ManyToOne(() => Category, (category) => category.books)
+  @ManyToOne(() => Category, (category) => category.books, {
+    onDelete: 'SET NULL',
+  })
   @JoinColumn({ name: 'category_id', referencedColumnName: 'categoryId' })
   category: Category;
 
