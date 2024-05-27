@@ -17,7 +17,7 @@ export class CreateChapterDto {
   content: string;
 
   @IsNumber()
-  @IsNotEmpty()
+  @IsOptional()
   priority: number;
 
   @IsEnum(Status)

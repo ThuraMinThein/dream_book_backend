@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -7,6 +11,7 @@ import { Repository } from 'typeorm';
 import { User } from 'src/users/entities/User.entity';
 import { CloudinaryService } from 'src/common/services/cloudinary/cloudinary.service';
 import { CategoriesService } from 'src/categories/categories.service';
+import slugify from 'slugify';
 
 @Injectable()
 export class BooksService {
@@ -23,6 +28,18 @@ export class BooksService {
     coverImage: Express.Multer.File,
     createBookDto: CreateBookDto,
   ): Promise<Book> {
+    //find user entered category exists of not
+    const category = await this.categoriesService.findOne(
+      createBookDto.categoryId,
+    );
+
+    //create slug by title and user id
+    const slug = this.createSlug(createBookDto.title, user.userId);
+
+    //check if user already has a book with same title
+    const book = await this.hasSlug(slug);
+    if (book) throw new ConflictException('Duplicate book title');
+
     //store image in cloudinary
     let imageUrl: string;
     if (coverImage) {
@@ -33,14 +50,10 @@ export class BooksService {
       imageUrl = url;
     }
 
-    //find user entered category exists of not
-    const category = await this.categoriesService.findOne(
-      createBookDto.categoryId,
-    );
-
     //create book
     const newBook = this.booksRepository.create({
       ...createBookDto,
+      slug,
       coverImage: imageUrl,
       category,
       user,
@@ -49,7 +62,12 @@ export class BooksService {
   }
 
   async bookFromAllUsers(): Promise<Book[]> {
-    const book = await this.booksRepository.find();
+    const book = await this.booksRepository.find({
+      relations: {
+        user: true,
+        category: true,
+      },
+    });
     if (!book) {
       throw new NotFoundException('Book not found');
     }
@@ -127,6 +145,7 @@ export class BooksService {
     //update book
     const updatedBook = this.booksRepository.create({
       ...book,
+      category,
       coverImage: bookImage,
       ...updateBookDto,
     });
@@ -144,4 +163,23 @@ export class BooksService {
   }
 
   //functions
+
+  createSlug(title: string, bookId: number) {
+    const slug = slugify(title, {
+      replacement: '-',
+      remove: /[*+~.()'"!:@]/g,
+      lower: true,
+    });
+
+    return slug + '-' + bookId;
+  }
+
+  async hasSlug(slug: string): Promise<Book> {
+    const book = await this.booksRepository.findOne({
+      where: {
+        slug,
+      },
+    });
+    return book;
+  }
 }

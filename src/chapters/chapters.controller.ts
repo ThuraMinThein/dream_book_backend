@@ -9,7 +9,6 @@ import {
   UseFilters,
   Req,
   UseGuards,
-  ParseIntPipe,
 } from '@nestjs/common';
 import { ChaptersService } from './chapters.service';
 import { CreateChapterDto } from './dto/create-chapter.dto';

@@ -22,10 +22,6 @@ export class CreateBookDto {
   @IsOptional()
   description: string;
 
-  @IsString()
-  @IsNotEmpty()
-  slug: string;
-
   @IsArray()
   @IsNotEmpty()
   keywords: string[];
