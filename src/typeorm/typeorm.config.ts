@@ -7,6 +7,16 @@ import { Comment } from 'src/comments/entities/comment.entity';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 import { InterestedCategory } from 'src/interested-categories/entities/interested-category.entity';
 import { Progress } from 'src/chapter-progress/entities/chapter-progress.entity';
+import { ModeEnum } from 'src/utils/enums/mode.enum';
+
+const sslReject =
+  process.env.MODE === ModeEnum.Production
+    ? {
+        ssl: {
+          rejectUnauthorized: false,
+        },
+      }
+    : null;
 
 const config: PostgresConnectionOptions = {
   type: 'postgres',
@@ -26,7 +36,8 @@ const config: PostgresConnectionOptions = {
     InterestedCategory,
     Progress,
   ],
-  synchronize: true,
+  ...sslReject,
+  synchronize: false,
 };
 
 export default config;
