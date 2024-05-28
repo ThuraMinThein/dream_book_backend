@@ -14,16 +14,15 @@ import {
   ClassSerializerInterceptor,
   UploadedFile,
 } from '@nestjs/common';
+import { Book } from './entities/Book.entity';
 import { BooksService } from './books.service';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
-import { TypeormExceptionFilter } from 'src/common/filters/exceptionfilters/typeorm-exception.filter';
-import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.gurad';
-import { User } from 'src/users/entities/User.entity';
-import { CustomRequest } from 'src/common/interfaces/custom-request.interface';
-import { GROUP_USER } from 'src/utils/serializers/group.serializer';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Book } from './entities/Book.entity';
+import { JwtAuthGuard } from '../auth/guard/jwt-auth.gurad';
+import { GROUP_USER } from '../utils/serializers/group.serializer';
+import { CustomRequest } from '../common/interfaces/custom-request.interface';
+import { TypeormExceptionFilter } from '../common/filters/exceptionfilters/typeorm-exception.filter';
 
 @Controller({
   path: 'books',

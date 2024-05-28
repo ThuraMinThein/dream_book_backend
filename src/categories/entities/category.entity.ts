@@ -1,6 +1,6 @@
-import { Book } from 'src/books/entities/Book.entity';
-import { InterestedCategory } from 'src/interested-categories/entities/interested-category.entity';
+import { Book } from '../../books/entities/Book.entity';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { InterestedCategory } from '../../interested-categories/entities/interested-category.entity';
 
 @Entity('categories')
 export class Category {

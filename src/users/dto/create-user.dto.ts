@@ -7,7 +7,7 @@ import {
   IsString,
   MinLength,
 } from 'class-validator';
-import { Gender } from 'src/utils/enums/gender.enum';
+import { Gender } from '../../utils/enums/gender.enum';
 
 export class CreateUserDto {
   @IsString()

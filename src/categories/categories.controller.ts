@@ -10,12 +10,12 @@ import {
   UseInterceptors,
   UploadedFile,
 } from '@nestjs/common';
+import { Category } from './entities/category.entity';
 import { CategoriesService } from './categories.service';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-import { TypeormExceptionFilter } from 'src/common/filters/exceptionfilters/typeorm-exception.filter';
-import { Category } from './entities/category.entity';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { TypeormExceptionFilter } from '../common/filters/exceptionfilters/typeorm-exception.filter';
 
 @Controller({
   path: 'categories',

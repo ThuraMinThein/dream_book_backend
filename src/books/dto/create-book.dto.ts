@@ -7,7 +7,7 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { Status } from 'src/utils/enums/status.enum';
+import { Status } from '../../utils/enums/status.enum';
 
 export class CreateBookDto {
   @IsString()

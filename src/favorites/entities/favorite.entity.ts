@@ -1,5 +1,5 @@
-import { Book } from 'src/books/entities/Book.entity';
-import { User } from 'src/users/entities/User.entity';
+import { Book } from '../../books/entities/Book.entity';
+import { User } from '../../users/entities/User.entity';
 import { Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 
 @Entity('favorites')

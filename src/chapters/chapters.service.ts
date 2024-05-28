@@ -1,12 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateChapterDto } from './dto/create-chapter.dto';
-import { UpdateChapterDto } from './dto/update-chapter.dto';
+import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Chapter } from './entities/chapter.entity';
-import { Repository } from 'typeorm';
-import { BooksService } from 'src/books/books.service';
-import { User } from 'src/users/entities/User.entity';
-import { Book } from 'src/books/entities/Book.entity';
+import { User } from '../users/entities/User.entity';
+import { BooksService } from '../books/books.service';
+import { CreateChapterDto } from './dto/create-chapter.dto';
+import { UpdateChapterDto } from './dto/update-chapter.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
 
 @Injectable()
 export class ChaptersService {

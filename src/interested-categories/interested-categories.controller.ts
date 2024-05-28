@@ -11,7 +11,7 @@ import {
 import { InterestedCategoriesService } from './interested-categories.service';
 import { CreateInterestedCategoryDto } from './dto/create-interested-category.dto';
 import { UpdateInterestedCategoryDto } from './dto/update-interested-category.dto';
-import { TypeormExceptionFilter } from 'src/common/filters/exceptionfilters/typeorm-exception.filter';
+import { TypeormExceptionFilter } from '../common/filters/exceptionfilters/typeorm-exception.filter';
 
 @Controller({
   path: 'interested-categories',

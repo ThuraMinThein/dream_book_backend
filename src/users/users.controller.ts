@@ -14,14 +14,14 @@ import {
   Req,
   Request,
 } from '@nestjs/common';
+import { User } from './entities/User.entity';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { TypeormExceptionFilter } from 'src/common/filters/exceptionfilters/typeorm-exception.filter';
-import { GROUP_USER } from 'src/utils/serializers/group.serializer';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { User } from './entities/User.entity';
-import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.gurad';
-import { CustomRequest } from 'src/common/interfaces/custom-request.interface';
+import { JwtAuthGuard } from '../auth/guard/jwt-auth.gurad';
+import { GROUP_USER } from '../utils/serializers/group.serializer';
+import { CustomRequest } from '../common/interfaces/custom-request.interface';
+import { TypeormExceptionFilter } from 'src/common/filters/exceptionfilters/typeorm-exception.filter';
 
 @Controller({
   path: 'user',

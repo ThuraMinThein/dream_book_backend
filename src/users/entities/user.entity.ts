@@ -6,14 +6,14 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Book } from '../../books/entities/Book.entity';
 import { Expose } from 'class-transformer';
-import { GROUP_ADMIN } from 'src/utils/serializers/group.serializer';
-import { Gender } from 'src/utils/enums/gender.enum';
-import { Favorite } from 'src/favorites/entities/favorite.entity';
-import { Comment } from 'src/comments/entities/comment.entity';
-import { InterestedCategory } from 'src/interested-categories/entities/interested-category.entity';
-import { Progress } from 'src/chapter-progress/entities/chapter-progress.entity';
+import { Gender } from '../../utils/enums/gender.enum';
+import { Book } from '../../books/entities/Book.entity';
+import { Comment } from '../../comments/entities/comment.entity';
+import { Favorite } from '../../favorites/entities/favorite.entity';
+import { GROUP_ADMIN } from '../../utils/serializers/group.serializer';
+import { Progress } from '../../chapter-progress/entities/chapter-progress.entity';
+import { InterestedCategory } from '../../interested-categories/entities/interested-category.entity';
 
 @Entity('users')
 export class User {

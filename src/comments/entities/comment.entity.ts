@@ -1,5 +1,3 @@
-import { Book } from 'src/books/entities/Book.entity';
-import { User } from 'src/users/entities/User.entity';
 import {
   Column,
   CreateDateColumn,
@@ -8,6 +6,8 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { User } from '../../users/entities/User.entity';
+import { Book } from '../../books/entities/Book.entity';
 
 @Entity('comments')
 export class Comment {

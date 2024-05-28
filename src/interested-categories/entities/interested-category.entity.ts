@@ -1,5 +1,3 @@
-import { Category } from 'src/categories/entities/category.entity';
-import { User } from 'src/users/entities/User.entity';
 import {
   Column,
   Entity,
@@ -7,6 +5,8 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { User } from '../../users/entities/User.entity';
+import { Category } from '../../categories/entities/category.entity';
 
 @Entity('interested_categories')
 export class InterestedCategory {

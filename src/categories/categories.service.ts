@@ -1,10 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateCategoryDto } from './dto/create-category.dto';
-import { UpdateCategoryDto } from './dto/update-category.dto';
+import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Category } from './entities/category.entity';
-import { Repository } from 'typeorm';
-import { CloudinaryService } from 'src/common/services/cloudinary/cloudinary.service';
+import { UpdateCategoryDto } from './dto/update-category.dto';
+import { CreateCategoryDto } from './dto/create-category.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { CloudinaryService } from '../common/services/cloudinary/cloudinary.service';
 
 @Injectable()
 export class CategoriesService {

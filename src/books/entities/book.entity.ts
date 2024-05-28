@@ -1,9 +1,3 @@
-import { Category } from 'src/categories/entities/category.entity';
-import { Chapter } from 'src/chapters/entities/chapter.entity';
-import { Favorite } from 'src/favorites/entities/favorite.entity';
-import { Comment } from 'src/comments/entities/comment.entity';
-import { User } from 'src/users/entities/User.entity';
-import { Status } from 'src/utils/enums/status.enum';
 import {
   Column,
   CreateDateColumn,
@@ -15,7 +9,13 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Progress } from 'src/chapter-progress/entities/chapter-progress.entity';
+import { Status } from '../../utils/enums/status.enum';
+import { User } from '../../users/entities/User.entity';
+import { Comment } from '../../comments/entities/comment.entity';
+import { Chapter } from '../../chapters/entities/chapter.entity';
+import { Favorite } from '../../favorites/entities/favorite.entity';
+import { Category } from '../../categories/entities/category.entity';
+import { Progress } from '../../chapter-progress/entities/chapter-progress.entity';
 
 @Entity('books')
 export class Book {

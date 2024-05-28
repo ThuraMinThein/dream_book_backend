@@ -10,14 +10,13 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { Chapter } from './entities/chapter.entity';
 import { ChaptersService } from './chapters.service';
 import { CreateChapterDto } from './dto/create-chapter.dto';
 import { UpdateChapterDto } from './dto/update-chapter.dto';
-import { TypeormExceptionFilter } from 'src/common/filters/exceptionfilters/typeorm-exception.filter';
-import { CustomRequest } from 'src/common/interfaces/custom-request.interface';
-import { Chapter } from './entities/chapter.entity';
-import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.gurad';
-import { BooksService } from 'src/books/books.service';
+import { JwtAuthGuard } from '../auth/guard/jwt-auth.gurad';
+import { CustomRequest } from '../common/interfaces/custom-request.interface';
+import { TypeormExceptionFilter } from '../common/filters/exceptionfilters/typeorm-exception.filter';
 
 @Controller({
   path: 'chapters',

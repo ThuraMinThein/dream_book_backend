@@ -3,15 +3,15 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import slugify from 'slugify';
+import { Repository } from 'typeorm';
+import { Book } from './entities/Book.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from '../users/entities/User.entity';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Book } from './entities/Book.entity';
-import { Repository } from 'typeorm';
-import { User } from 'src/users/entities/User.entity';
-import { CloudinaryService } from 'src/common/services/cloudinary/cloudinary.service';
-import { CategoriesService } from 'src/categories/categories.service';
-import slugify from 'slugify';
+import { CategoriesService } from '../categories/categories.service';
+import { CloudinaryService } from '../common/services/cloudinary/cloudinary.service';
 
 @Injectable()
 export class BooksService {

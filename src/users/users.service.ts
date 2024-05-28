@@ -3,11 +3,11 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { User } from './entities/User.entity';
 import { Repository } from 'typeorm';
-import { CloudinaryService } from 'src/common/services/cloudinary/cloudinary.service';
+import { User } from './entities/User.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { CloudinaryService } from '../common/services/cloudinary/cloudinary.service';
 
 @Injectable()
 export class UsersService {

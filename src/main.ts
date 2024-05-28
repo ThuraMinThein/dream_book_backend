@@ -11,6 +11,7 @@ async function bootstrap() {
   app.enableVersioning({
     type: VersioningType.URI,
   });
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
