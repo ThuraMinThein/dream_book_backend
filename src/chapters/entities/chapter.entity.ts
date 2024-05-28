@@ -1,4 +1,5 @@
 import { Book } from 'src/books/entities/Book.entity';
+import { Progress } from 'src/chapter-progress/entities/chapter-progress.entity';
 import { Status } from 'src/utils/enums/status.enum';
 import {
   Column,
@@ -7,6 +8,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -29,7 +31,9 @@ export class Chapter {
   })
   content: string;
 
-  @Column()
+  @Column({
+    default: 0,
+  })
   priority: number;
 
   @Column({
@@ -55,4 +59,8 @@ export class Chapter {
   })
   @JoinColumn({ name: 'book_id', referencedColumnName: 'bookId' })
   book: Book;
+
+  //a chapter can have many progresses
+  @OneToMany(() => Progress, (progresses) => progresses.chapter)
+  progresses: Progress[];
 }

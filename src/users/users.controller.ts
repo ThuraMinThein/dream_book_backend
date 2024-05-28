@@ -10,6 +10,9 @@ import {
   ClassSerializerInterceptor,
   SerializeOptions,
   UploadedFile,
+  UseGuards,
+  Req,
+  Request,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -17,9 +20,11 @@ import { TypeormExceptionFilter } from 'src/common/filters/exceptionfilters/type
 import { GROUP_USER } from 'src/utils/serializers/group.serializer';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { User } from './entities/User.entity';
+import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.gurad';
+import { CustomRequest } from 'src/common/interfaces/custom-request.interface';
 
 @Controller({
-  path: 'users',
+  path: 'user',
   version: '1',
 })
 @UseFilters(TypeormExceptionFilter)
@@ -40,22 +45,24 @@ export class UsersController {
     return this.usersService.findOne(+id);
   }
 
-  @Patch(':id')
+  @Patch()
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   @UseInterceptors(FileInterceptor('profilePicture'))
   @SerializeOptions({ groups: [GROUP_USER] })
   async update(
-    @Param('id') id: string,
+    @Request() req: CustomRequest,
     @UploadedFile() profilePicture: Express.Multer.File,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<User> {
-    return this.usersService.update(+id, profilePicture, updateUserDto);
+    return this.usersService.update(req.user, profilePicture, updateUserDto);
   }
 
-  @Delete(':id')
+  @Delete()
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({ groups: [GROUP_USER] })
-  async remove(@Param('id') id: string): Promise<User> {
-    return this.usersService.remove(+id);
+  async remove(@Request() req: CustomRequest): Promise<User> {
+    return this.usersService.remove(req.user);
   }
 }

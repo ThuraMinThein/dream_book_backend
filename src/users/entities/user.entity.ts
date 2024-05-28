@@ -13,6 +13,7 @@ import { Gender } from 'src/utils/enums/gender.enum';
 import { Favorite } from 'src/favorites/entities/favorite.entity';
 import { Comment } from 'src/comments/entities/comment.entity';
 import { InterestedCategory } from 'src/interested-categories/entities/interested-category.entity';
+import { Progress } from 'src/chapter-progress/entities/chapter-progress.entity';
 
 @Entity('users')
 export class User {
@@ -92,6 +93,10 @@ export class User {
   favorites: Favorite[];
 
   //a user can have many comments
-  @OneToMany(() => Comment, (comments) => comments.userId)
+  @OneToMany(() => Comment, (comments) => comments.user)
   comments: Comment[];
+
+  //a user can have many chapter progresses
+  @OneToMany(() => Progress, (progresses) => progresses.user)
+  progresses: Progress[];
 }

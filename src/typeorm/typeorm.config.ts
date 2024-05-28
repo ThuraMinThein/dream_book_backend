@@ -6,6 +6,7 @@ import { User } from 'src/users/entities/User.entity';
 import { Comment } from 'src/comments/entities/comment.entity';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 import { InterestedCategory } from 'src/interested-categories/entities/interested-category.entity';
+import { Progress } from 'src/chapter-progress/entities/chapter-progress.entity';
 
 const config: PostgresConnectionOptions = {
   type: 'postgres',
@@ -23,6 +24,7 @@ const config: PostgresConnectionOptions = {
     Comment,
     Favorite,
     InterestedCategory,
+    Progress,
   ],
   synchronize: true,
 };

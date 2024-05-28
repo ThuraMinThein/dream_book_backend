@@ -47,28 +47,25 @@ export class BooksController {
   }
 
   @Get('all')
+  @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({ groups: [GROUP_USER] })
-  async bookFromAllUsers(): Promise<Book[]> {
-    return this.booksService.bookFromAllUsers();
+  async findAll(): Promise<Book[]> {
+    return this.booksService.findAll();
   }
 
   @Get()
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({ groups: [GROUP_USER] })
-  async findAll(@Req() req: CustomRequest): Promise<Book[]> {
-    return this.booksService.findAll(req.user);
+  async findAllByUser(@Req() req: CustomRequest): Promise<Book[]> {
+    return this.booksService.findAllByUser(req.user);
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({ groups: [GROUP_USER] })
-  async findOne(
-    @Req() req: CustomRequest,
-    @Param('id') bookId: string,
-  ): Promise<Book> {
-    return this.booksService.findOne(req.user, +bookId);
+  async findOne(@Param('id') bookId: string): Promise<Book> {
+    return this.booksService.findOne(+bookId);
   }
 
   @Patch(':id')

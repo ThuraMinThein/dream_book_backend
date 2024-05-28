@@ -25,54 +25,43 @@ import { BooksService } from 'src/books/books.service';
 })
 @UseFilters(TypeormExceptionFilter)
 export class ChaptersController {
-  constructor(
-    private readonly chaptersService: ChaptersService,
-    private readonly booksService: BooksService,
-  ) {}
+  constructor(private readonly chaptersService: ChaptersService) {}
 
-  @Post(':bookId')
+  @Post()
   @UseGuards(JwtAuthGuard)
   async create(
     @Req() req: CustomRequest,
-    @Param('bookId') bookId: string,
     @Body() createChapterDto: CreateChapterDto,
   ): Promise<Chapter> {
-    return this.chaptersService.create(req.user, +bookId, createChapterDto);
+    return this.chaptersService.create(req.user, createChapterDto);
   }
 
-  @Get(':bookId')
-  @UseGuards(JwtAuthGuard)
-  async findAll(
-    @Req() req: CustomRequest,
-    @Param('bookId') bookId: string,
-  ): Promise<Chapter[]> {
-    return this.chaptersService.findAll(req.user, +bookId);
+  @Get()
+  async findAll(): Promise<Chapter[]> {
+    return this.chaptersService.findAll();
   }
 
-  @Get(':bookId/:chapterId')
-  async findOne(
-    @Param('bookId') bookId: number,
-    @Param('chapterId') chapterId: number,
-  ): Promise<Chapter> {
-    return this.chaptersService.findOne(+bookId, +chapterId);
+  @Get(':id')
+  async findOne(@Param('id') id: number): Promise<Chapter> {
+    return this.chaptersService.findOne(+id);
   }
 
-  @Patch(':bookId/:chapterId')
+  @Patch(':id')
   @UseGuards(JwtAuthGuard)
   async update(
-    @Param('bookId') bookId: string,
-    @Param('chapterId') chapterId: string,
+    @Req() req: CustomRequest,
+    @Param('id') id: string,
     @Body() updateChapterDto: UpdateChapterDto,
   ): Promise<Chapter> {
-    return this.chaptersService.update(+bookId, +chapterId, updateChapterDto);
+    return this.chaptersService.update(req.user, +id, updateChapterDto);
   }
 
-  @Delete(':bookId/:chapterId')
+  @Delete(':id')
   @UseGuards(JwtAuthGuard)
   async remove(
-    @Param('bookId') bookId: string,
-    @Param('chapterId') chapterId: string,
+    @Req() req: CustomRequest,
+    @Param('id') id: string,
   ): Promise<Chapter> {
-    return this.chaptersService.remove(+bookId, +chapterId);
+    return this.chaptersService.remove(req.user, +id);
   }
 }

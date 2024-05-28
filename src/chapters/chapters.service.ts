@@ -15,15 +15,15 @@ export class ChaptersService {
     private booksService: BooksService,
   ) {}
 
-  //functions
-
   //services
   async create(
     user: User,
-    bookId: number,
     createChapterDto: CreateChapterDto,
   ): Promise<Chapter> {
-    const book = await this.booksService.findOne(user, bookId);
+    const book = await this.booksService.findOneByUser(
+      user,
+      createChapterDto.bookId,
+    );
     const chaper = this.chaptersRepository.create({
       ...createChapterDto,
       book,
@@ -32,15 +32,8 @@ export class ChaptersService {
     return this.chaptersRepository.save(chaper);
   }
 
-  async findAll(user: User, bookId: number): Promise<Chapter[]> {
-    const { userId } = user;
+  async findAll(): Promise<Chapter[]> {
     const chapters = this.chaptersRepository.find({
-      where: {
-        book: {
-          bookId,
-          user: { userId },
-        },
-      },
       relations: {
         book: true,
       },
@@ -48,13 +41,13 @@ export class ChaptersService {
     return chapters;
   }
 
-  async findOne(bookId: number, chapterId: number): Promise<Chapter> {
-    const chapter = this.chaptersRepository.findOne({
+  async findOne(chapterId: number): Promise<Chapter> {
+    const chapter = await this.chaptersRepository.findOne({
       where: {
         chapterId,
-        book: {
-          bookId,
-        },
+      },
+      relations: {
+        book: true,
       },
     });
     if (!chapter) {
@@ -64,11 +57,11 @@ export class ChaptersService {
   }
 
   async update(
-    bookId: number,
+    user: User,
     chapterId: number,
     updateChapterDto: UpdateChapterDto,
   ): Promise<Chapter> {
-    const chapter = await this.findOne(bookId, chapterId);
+    const chapter = await this.findOneByUser(user, chapterId);
     const updatedChapter = this.chaptersRepository.create({
       ...chapter,
       ...updateChapterDto,
@@ -76,9 +69,30 @@ export class ChaptersService {
     return this.chaptersRepository.save(updatedChapter);
   }
 
-  async remove(bookId: number, chapterId: number): Promise<Chapter> {
-    const chapter = await this.findOne(bookId, chapterId);
+  async remove(user: User, chapterId: number): Promise<Chapter> {
+    const chapter = await this.findOneByUser(user, chapterId);
     await this.chaptersRepository.delete(chapterId);
+    return chapter;
+  }
+
+  //functions
+  async findOneByUser(user: User, chapterId: number): Promise<Chapter> {
+    const chapter = await this.chaptersRepository.findOne({
+      where: {
+        chapterId,
+        book: {
+          user: {
+            userId: user.userId,
+          },
+        },
+      },
+      relations: {
+        book: true,
+      },
+    });
+    if (!chapter) {
+      throw new NotFoundException('Chapter not found');
+    }
     return chapter;
   }
 }

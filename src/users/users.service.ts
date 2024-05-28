@@ -33,12 +33,10 @@ export class UsersService {
   }
 
   async update(
-    id: number,
+    user: User,
     newProfilePicture: Express.Multer.File,
     updateUserDto: UpdateUserDto,
   ): Promise<User> {
-    const user = await this.findOne(id);
-
     //if the user wants to change the image, replace image in cloudinary with new and old image
     let profilePicture = user.profilePicture;
     if (newProfilePicture) {
@@ -62,13 +60,11 @@ export class UsersService {
     return this.usersRepository.save(updatedUser);
   }
 
-  async remove(id: number): Promise<User> {
-    const user = await this.findOne(id);
-
+  async remove(user: User): Promise<User> {
     //delete image in cloudinary if there is an image
     if (user.profilePicture)
       await this.cloudinaryService.deleteImage(user.profilePicture);
-    await this.usersRepository.delete(id); //delete user
+    await this.usersRepository.delete(user.userId); //delete user
     return user;
   }
 

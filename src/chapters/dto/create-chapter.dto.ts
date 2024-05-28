@@ -21,5 +21,10 @@ export class CreateChapterDto {
   priority: number;
 
   @IsEnum(Status)
+  @IsOptional()
   status: Status;
+
+  @IsNumber()
+  @IsNotEmpty()
+  bookId: number;
 }

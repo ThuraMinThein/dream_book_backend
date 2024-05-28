@@ -11,8 +11,8 @@ import {
 
 @Entity('comments')
 export class Comment {
-  @PrimaryGeneratedColumn()
-  comment_id: number;
+  @PrimaryGeneratedColumn({ name: 'comment_id' })
+  commentId: number;
 
   @Column({
     type: 'text',
@@ -28,12 +28,12 @@ export class Comment {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'user_id', referencedColumnName: 'userId' })
-  userId: User;
+  user: User;
 
   //a book can have many comments
   @ManyToOne(() => Book, (book) => book.comments, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'book_id', referencedColumnName: 'bookId' })
-  bookId: Book;
+  book: Book;
 }

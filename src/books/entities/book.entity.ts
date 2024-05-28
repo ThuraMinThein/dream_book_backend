@@ -15,6 +15,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Progress } from 'src/chapter-progress/entities/chapter-progress.entity';
 
 @Entity('books')
 export class Book {
@@ -92,10 +93,14 @@ export class Book {
   category: Category;
 
   //one book can have many favorites
-  @OneToMany(() => Favorite, (favorite) => favorite.bookId)
+  @OneToMany(() => Favorite, (favorite) => favorite.book)
   favorites: Favorite[];
 
   //a book can have many comments
-  @OneToMany(() => Comment, (comments) => comments.bookId)
+  @OneToMany(() => Comment, (comments) => comments.book)
   comments: Comment[];
+
+  //a book can have many chapter progresses
+  @OneToMany(() => Progress, (progresses) => progresses.book)
+  progresses: Progress[];
 }

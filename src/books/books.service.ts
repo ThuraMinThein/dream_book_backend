@@ -28,7 +28,7 @@ export class BooksService {
     coverImage: Express.Multer.File,
     createBookDto: CreateBookDto,
   ): Promise<Book> {
-    //find user entered category exists of not
+    //find user entered category exists or not
     const category = await this.categoriesService.findOne(
       createBookDto.categoryId,
     );
@@ -61,7 +61,7 @@ export class BooksService {
     return this.booksRepository.save(newBook);
   }
 
-  async bookFromAllUsers(): Promise<Book[]> {
+  async findAll(): Promise<Book[]> {
     const book = await this.booksRepository.find({
       relations: {
         user: true,
@@ -74,7 +74,7 @@ export class BooksService {
     return book;
   }
 
-  async findAll(user: User): Promise<Book[]> {
+  async findAllByUser(user: User): Promise<Book[]> {
     const books = await this.booksRepository.find({
       where: {
         user: {
@@ -92,13 +92,10 @@ export class BooksService {
     return books;
   }
 
-  async findOne(user: User, bookId: number): Promise<Book> {
+  async findOne(bookId: number): Promise<Book> {
     const book = await this.booksRepository.findOne({
       where: {
         bookId,
-        user: {
-          userId: user.userId,
-        },
       },
       relations: {
         user: true,
@@ -118,7 +115,7 @@ export class BooksService {
     updateBookDto: UpdateBookDto,
   ): Promise<Book> {
     //find book
-    const book = await this.findOne(user, bookId);
+    const book = await this.findOneByUser(user, bookId);
 
     //if the user wants to change the image, replace image in cloudinary with new and old image
     let bookImage = book.coverImage;
@@ -153,7 +150,7 @@ export class BooksService {
   }
 
   async remove(user: User, bookId: number): Promise<Book> {
-    const book = await this.findOne(user, bookId);
+    const book = await this.findOneByUser(user, bookId);
     //delete image in cloudinary if there is an image
     if (book.coverImage)
       await this.cloudinaryService.deleteImage(book.coverImage);
@@ -163,6 +160,25 @@ export class BooksService {
   }
 
   //functions
+
+  async findOneByUser(user: User, bookId: number): Promise<Book> {
+    const book = await this.booksRepository.findOne({
+      where: {
+        bookId,
+        user: {
+          userId: user.userId,
+        },
+      },
+      relations: {
+        user: true,
+        category: true,
+      },
+    });
+    if (!book) {
+      throw new NotFoundException('Book not found');
+    }
+    return book;
+  }
 
   createSlug(title: string, bookId: number) {
     const slug = slugify(title, {
