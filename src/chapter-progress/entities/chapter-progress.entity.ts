@@ -5,8 +5,8 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { User } from '../../users/entities/User.entity';
-import { Book } from '../../books/entities/Book.entity';
+import { User } from '../../users/entities/user.entity';
+import { Book } from '../../books/entities/book.entity';
 import { Chapter } from '../../chapters/entities/chapter.entity';
 
 @Entity('chapter_progresses')

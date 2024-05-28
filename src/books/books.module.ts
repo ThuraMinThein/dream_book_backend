@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { Book } from './entities/Book.entity';
+import { Book } from './entities/book.entity';
 import { BooksService } from './books.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from '../users/users.module';

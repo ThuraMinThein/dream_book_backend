@@ -14,7 +14,7 @@ import {
   Req,
   Request,
 } from '@nestjs/common';
-import { User } from './entities/User.entity';
+import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';

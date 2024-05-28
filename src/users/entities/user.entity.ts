@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import { Expose } from 'class-transformer';
 import { Gender } from '../../utils/enums/gender.enum';
-import { Book } from '../../books/entities/Book.entity';
+import { Book } from '../../books/entities/book.entity';
 import { Comment } from '../../comments/entities/comment.entity';
 import { Favorite } from '../../favorites/entities/favorite.entity';
 import { GROUP_ADMIN } from '../../utils/serializers/group.serializer';
@@ -79,7 +79,7 @@ export class User {
   //relationships
   //a user can create many books
   @OneToMany(() => Book, (book) => book.user)
-  createdBooks: Book[];
+  books: Book[];
 
   //a user can have many categories
   @OneToMany(

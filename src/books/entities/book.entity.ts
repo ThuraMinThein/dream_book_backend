@@ -10,7 +10,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Status } from '../../utils/enums/status.enum';
-import { User } from '../../users/entities/User.entity';
+import { User } from '../../users/entities/user.entity';
 import { Comment } from '../../comments/entities/comment.entity';
 import { Chapter } from '../../chapters/entities/chapter.entity';
 import { Favorite } from '../../favorites/entities/favorite.entity';
@@ -75,7 +75,7 @@ export class Book {
 
   //relationships
   //many books can be created by a user
-  @ManyToOne(() => User, (user) => user.createdBooks, {
+  @ManyToOne(() => User, (user) => user.books, {
     onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'user_id', referencedColumnName: 'userId' })

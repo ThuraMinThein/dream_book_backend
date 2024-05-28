@@ -1,7 +1,7 @@
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 import { ModeEnum } from '../utils/enums/mode.enum';
-import { User } from '../users/entities/User.entity';
-import { Book } from '../books/entities/Book.entity';
+import { User } from '../users/entities/user.entity';
+import { Book } from '../books/entities/book.entity';
 import { Category } from '../categories/entities/category.entity';
 import { Chapter } from '../chapters/entities/chapter.entity';
 import { Favorite } from '../favorites/entities/favorite.entity';

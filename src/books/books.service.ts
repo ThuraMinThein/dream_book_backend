@@ -5,9 +5,9 @@ import {
 } from '@nestjs/common';
 import slugify from 'slugify';
 import { Repository } from 'typeorm';
-import { Book } from './entities/Book.entity';
+import { Book } from './entities/book.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from '../users/entities/User.entity';
+import { User } from '../users/entities/user.entity';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { CategoriesService } from '../categories/categories.service';

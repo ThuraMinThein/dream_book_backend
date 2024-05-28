@@ -14,7 +14,7 @@ import {
   ClassSerializerInterceptor,
   UploadedFile,
 } from '@nestjs/common';
-import { Book } from './entities/Book.entity';
+import { Book } from './entities/book.entity';
 import { BooksService } from './books.service';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';

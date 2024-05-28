@@ -10,7 +10,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Status } from '../../utils/enums/status.enum';
-import { Book } from '../../books/entities/Book.entity';
+import { Book } from '../../books/entities/book.entity';
 import { Progress } from '../../chapter-progress/entities/chapter-progress.entity';
 
 @Entity('chapters')

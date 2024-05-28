@@ -1,4 +1,4 @@
-import { Book } from '../../books/entities/Book.entity';
+import { Book } from '../../books/entities/book.entity';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { InterestedCategory } from '../../interested-categories/entities/interested-category.entity';
 
