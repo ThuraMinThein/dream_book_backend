@@ -5,6 +5,8 @@ import { ValidationPipe, VersioningType } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  app.enableCors();
+
   //routes will start with /api/
   app.setGlobalPrefix('api');
 
