@@ -13,6 +13,8 @@ export class UserSerializer {
   phoneNumber: string;
   bio: string;
   gender: Gender;
+  expiredDate: Date;
+  access_token: string;
 
   constructor(partial: Partial<UserSerializer>) {
     Object.assign(this, partial);

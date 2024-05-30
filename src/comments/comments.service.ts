@@ -1,9 +1,13 @@
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Repository } from 'typeorm';
-import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Comment } from './entities/comment.entity';
+import { User } from '../users/entities/user.entity';
 import { BooksService } from '../books/books.service';
-import { UsersService } from '../users/users.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 
@@ -12,14 +16,13 @@ export class CommentsService {
   constructor(
     @InjectRepository(Comment) private commentsRepository: Repository<Comment>,
     private booksService: BooksService,
-    private usresService: UsersService,
   ) {}
 
-  async create(createCommentDto: CreateCommentDto): Promise<Comment> {
-    const { userId, bookId } = createCommentDto;
-
-    //check if user exists
-    const user = await this.usresService.findOne(userId);
+  async create(
+    user: User,
+    createCommentDto: CreateCommentDto,
+  ): Promise<Comment> {
+    const { bookId } = createCommentDto;
 
     //check if book exists
     const book = await this.booksService.findOne(bookId);
@@ -34,13 +37,59 @@ export class CommentsService {
     return this.commentsRepository.save(newComment);
   }
 
-  async findAll(): Promise<Comment[]> {
+  async findAll(bookId: number): Promise<Comment[]> {
+    if (!bookId)
+      throw new BadRequestException('You must add book id as query param');
+
+    //check if book exists
+    await this.booksService.findOne(bookId);
+
     const comments = await this.commentsRepository.find({
+      where: {
+        book: {
+          bookId,
+        },
+      },
       relations: {
         user: true,
         book: true,
       },
     });
+    if (comments.length === 0)
+      throw new NotFoundException('No comments yet :(');
     return comments;
+  }
+
+  async findOneByUser(user: User, commentId: number): Promise<Comment> {
+    const comment = await this.commentsRepository.findOne({
+      where: {
+        commentId,
+        user: {
+          userId: user.userId,
+        },
+      },
+      relations: {
+        user: true,
+        book: true,
+      },
+    });
+    if (!comment) throw new NotFoundException('comment not found');
+    return comment;
+  }
+
+  async update(
+    user: User,
+    id: number,
+    updateCommentDto: UpdateCommentDto,
+  ): Promise<Comment> {
+    //check if comment exists;
+    const comment = await this.findOneByUser(user, id);
+
+    const updatedComment = this.commentsRepository.create({
+      ...comment,
+      ...updateCommentDto,
+    });
+
+    return updatedComment;
   }
 }

@@ -1,18 +1,18 @@
 import {
-  Controller,
   Get,
   Post,
   Body,
   Patch,
   Param,
   Delete,
-  UseFilters,
   UseGuards,
-  Req,
-  SerializeOptions,
-  UseInterceptors,
-  ClassSerializerInterceptor,
+  Controller,
+  UseFilters,
   UploadedFile,
+  UseInterceptors,
+  SerializeOptions,
+  ClassSerializerInterceptor,
+  Request,
 } from '@nestjs/common';
 import { Book } from './entities/book.entity';
 import { BooksService } from './books.service';
@@ -38,33 +38,46 @@ export class BooksController {
   @UseInterceptors(FileInterceptor('coverImage'))
   @SerializeOptions({ groups: [GROUP_USER] })
   async create(
-    @Req() req: CustomRequest,
+    @Request() req: CustomRequest,
     @UploadedFile() coverImage: Express.Multer.File,
     @Body() createBookDto: CreateBookDto,
   ): Promise<Book> {
     return this.booksService.create(req.user, coverImage, createBookDto);
   }
 
-  @Get('all')
+  //get books from all users
+  @Get('public')
   @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({ groups: [GROUP_USER] })
   async findAll(): Promise<Book[]> {
     return this.booksService.findAll();
   }
 
-  @Get()
-  @UseGuards(JwtAuthGuard)
-  @UseInterceptors(ClassSerializerInterceptor)
-  @SerializeOptions({ groups: [GROUP_USER] })
-  async findAllByUser(@Req() req: CustomRequest): Promise<Book[]> {
-    return this.booksService.findAllByUser(req.user);
-  }
-
-  @Get(':id')
+  @Get('public/:id')
   @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({ groups: [GROUP_USER] })
   async findOne(@Param('id') bookId: string): Promise<Book> {
     return this.booksService.findOne(+bookId);
+  }
+
+  //get books from author
+  @Get('author')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
+  @SerializeOptions({ groups: [GROUP_USER] })
+  async findAllByAuthor(@Request() req: CustomRequest): Promise<Book[]> {
+    return this.booksService.findAllByAuthor(req.user);
+  }
+
+  @Get('author/:id')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
+  @SerializeOptions({ groups: [GROUP_USER] })
+  async findOneByAuthor(
+    @Request() req: CustomRequest,
+    @Param('id') bookId: CustomRequest,
+  ): Promise<Book> {
+    return this.booksService.findOneByAuthor(req.user, +bookId);
   }
 
   @Patch(':id')
@@ -73,7 +86,7 @@ export class BooksController {
   @UseInterceptors(FileInterceptor('bookImage'))
   @SerializeOptions({ groups: [GROUP_USER] })
   async update(
-    @Req() req: CustomRequest,
+    @Request() req: CustomRequest,
     @Param('id') bookId: string,
     @UploadedFile() coverImage: Express.Multer.File,
     @Body() updateBookDto: UpdateBookDto,
@@ -91,7 +104,7 @@ export class BooksController {
   @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({ groups: [GROUP_USER] })
   async remove(
-    @Req() req: CustomRequest,
+    @Request() req: CustomRequest,
     @Param('id') bookId: string,
   ): Promise<Book> {
     return this.booksService.remove(req.user, +bookId);

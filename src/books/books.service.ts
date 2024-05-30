@@ -1,12 +1,13 @@
 import {
-  ConflictException,
   Injectable,
+  ConflictException,
   NotFoundException,
 } from '@nestjs/common';
 import slugify from 'slugify';
 import { Repository } from 'typeorm';
 import { Book } from './entities/book.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Status } from '../utils/enums/status.enum';
 import { User } from '../users/entities/user.entity';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
@@ -28,17 +29,17 @@ export class BooksService {
     coverImage: Express.Multer.File,
     createBookDto: CreateBookDto,
   ): Promise<Book> {
-    //find user entered category exists or not
-    const category = await this.categoriesService.findOne(
-      createBookDto.categoryId,
-    );
-
     //create slug by title and user id
     const slug = this.createSlug(createBookDto.title, user.userId);
 
     //check if user already has a book with same title
-    const book = await this.hasSlug(slug);
-    if (book) throw new ConflictException('Duplicate book title');
+    const hasSlug = await this.hasSlug(slug);
+    if (hasSlug) throw new ConflictException('Duplicate book title');
+
+    //find user entered category exists or not
+    const category = await this.categoriesService.findOne(
+      createBookDto.categoryId,
+    );
 
     //store image in cloudinary
     let imageUrl: string;
@@ -61,8 +62,14 @@ export class BooksService {
     return this.booksRepository.save(newBook);
   }
 
+  //find books from all users
   async findAll(): Promise<Book[]> {
+    //have to add pagination
+
     const book = await this.booksRepository.find({
+      where: {
+        status: Status.PUBLISHED,
+      },
       relations: {
         user: true,
         category: true,
@@ -74,7 +81,25 @@ export class BooksService {
     return book;
   }
 
-  async findAllByUser(user: User): Promise<Book[]> {
+  async findOne(bookId: number): Promise<Book> {
+    const book = await this.booksRepository.findOne({
+      where: {
+        bookId,
+        status: Status.PUBLISHED,
+      },
+      relations: {
+        user: true,
+        category: true,
+      },
+    });
+    if (!book) {
+      throw new NotFoundException('Book not found');
+    }
+    return book;
+  }
+
+  //find books from author
+  async findAllByAuthor(user: User): Promise<Book[]> {
     const books = await this.booksRepository.find({
       where: {
         user: {
@@ -92,10 +117,13 @@ export class BooksService {
     return books;
   }
 
-  async findOne(bookId: number): Promise<Book> {
+  async findOneByAuthor(user: User, bookId: number): Promise<Book> {
     const book = await this.booksRepository.findOne({
       where: {
         bookId,
+        user: {
+          userId: user.userId,
+        },
       },
       relations: {
         user: true,
@@ -115,7 +143,17 @@ export class BooksService {
     updateBookDto: UpdateBookDto,
   ): Promise<Book> {
     //find book
-    const book = await this.findOneByUser(user, bookId);
+    const book = await this.findOneByAuthor(user, bookId);
+
+    //if user changed the title, gotta update the slug
+    let slug = book.slug;
+    if (updateBookDto?.title) {
+      slug = this.createSlug(updateBookDto.title, user.userId);
+
+      //check if user already has a book with same title
+      const hasSlug = await this.hasSlug(slug);
+      if (hasSlug) throw new ConflictException('Duplicate book title');
+    }
 
     //if the user wants to change the image, replace image in cloudinary with new and old image
     let bookImage = book.coverImage;
@@ -127,8 +165,8 @@ export class BooksService {
       bookImage = url;
 
       //delete old image in cloudinary if there is an image exists
-      if (book.coverImage)
-        await this.cloudinaryService.deleteImage(book.coverImage);
+      book?.coverImage &&
+        (await this.cloudinaryService.deleteImage(book.coverImage));
     }
 
     //if user wants to change the category, find the category and update the book
@@ -142,6 +180,7 @@ export class BooksService {
     //update book
     const updatedBook = this.booksRepository.create({
       ...book,
+      slug,
       category,
       coverImage: bookImage,
       ...updateBookDto,
@@ -150,10 +189,10 @@ export class BooksService {
   }
 
   async remove(user: User, bookId: number): Promise<Book> {
-    const book = await this.findOneByUser(user, bookId);
+    const book = await this.findOneByAuthor(user, bookId);
     //delete image in cloudinary if there is an image
-    if (book.coverImage)
-      await this.cloudinaryService.deleteImage(book.coverImage);
+    book.coverImage &&
+      (await this.cloudinaryService.deleteImage(book.coverImage));
 
     await this.booksRepository.delete(bookId);
     return book;
@@ -161,33 +200,14 @@ export class BooksService {
 
   //functions
 
-  async findOneByUser(user: User, bookId: number): Promise<Book> {
-    const book = await this.booksRepository.findOne({
-      where: {
-        bookId,
-        user: {
-          userId: user.userId,
-        },
-      },
-      relations: {
-        user: true,
-        category: true,
-      },
-    });
-    if (!book) {
-      throw new NotFoundException('Book not found');
-    }
-    return book;
-  }
-
-  createSlug(title: string, bookId: number) {
+  createSlug(title: string, userId: number) {
     const slug = slugify(title, {
       replacement: '-',
-      remove: /[*+~.()'"!:@]/g,
+      remove: /[*+~,.()'"!:@]/g,
       lower: true,
     });
 
-    return slug + '-' + bookId;
+    return slug + '-' + userId;
   }
 
   async hasSlug(slug: string): Promise<Book> {

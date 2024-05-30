@@ -9,6 +9,7 @@ import {
   UseFilters,
   UseInterceptors,
   UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
 import { Category } from './entities/category.entity';
 import { CategoriesService } from './categories.service';
@@ -31,6 +32,7 @@ export class CategoriesController {
     @UploadedFile() icon: Express.Multer.File,
     @Body() createCategoryDto: CreateCategoryDto,
   ): Promise<Category> {
+    if (!icon) throw new BadRequestException('Icon is required!');
     return this.categoriesService.create(icon, createCategoryDto);
   }
 

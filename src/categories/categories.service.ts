@@ -3,7 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Category } from './entities/category.entity';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { CreateCategoryDto } from './dto/create-category.dto';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CloudinaryService } from '../common/services/cloudinary/cloudinary.service';
 
 @Injectable()
@@ -20,6 +24,10 @@ export class CategoriesService {
     icon: Express.Multer.File,
     createCategoryDto: CreateCategoryDto,
   ): Promise<Category> {
+    //check the title exists
+    const category = await this.findOneWithTitle(createCategoryDto.title);
+    if (category) throw new ConflictException('Duplicate category');
+
     //store icon in cloudinary
     let iconUrl: string;
     if (icon) {
@@ -39,7 +47,11 @@ export class CategoriesService {
   }
 
   async findAll(): Promise<Category[]> {
-    const categories = await this.categoriesRepository.find();
+    const categories = await this.categoriesRepository.find({
+      order: {
+        priority: 'DESC',
+      },
+    });
     if (categories.length === 0) {
       throw new NotFoundException('No categories found');
     }
@@ -75,8 +87,8 @@ export class CategoriesService {
       icon = url;
 
       //delete old image in cloudinary if there is an image exists.
-      if (category.icon)
-        await this.cloudinaryService.deleteImage(category.icon);
+      category?.icon &&
+        (await this.cloudinaryService.deleteImage(category.icon));
     }
 
     const updatedCategory = this.categoriesRepository.create({
@@ -91,11 +103,15 @@ export class CategoriesService {
     const category = await this.findOne(categoryId);
 
     //delete category in cloudinary if there is an image exists.
-    if (category.icon) await this.cloudinaryService.deleteImage(category.icon);
+    category?.icon && (await this.cloudinaryService.deleteImage(category.icon));
 
     await this.categoriesRepository.delete(categoryId);
     return category;
   }
 
   //functions
+
+  async findOneWithTitle(title: string): Promise<Category> {
+    return this.categoriesRepository.findOneBy({ title });
+  }
 }

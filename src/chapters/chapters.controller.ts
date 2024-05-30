@@ -1,14 +1,16 @@
 import {
-  Controller,
   Get,
   Post,
   Body,
   Patch,
   Param,
+  Query,
   Delete,
-  UseFilters,
-  Req,
+  Request,
   UseGuards,
+  UseFilters,
+  Controller,
+  BadRequestException,
 } from '@nestjs/common';
 import { Chapter } from './entities/chapter.entity';
 import { ChaptersService } from './chapters.service';
@@ -29,26 +31,50 @@ export class ChaptersController {
   @Post()
   @UseGuards(JwtAuthGuard)
   async create(
-    @Req() req: CustomRequest,
+    @Request() req: CustomRequest,
     @Body() createChapterDto: CreateChapterDto,
   ): Promise<Chapter> {
     return this.chaptersService.create(req.user, createChapterDto);
   }
 
-  @Get()
-  async findAll(): Promise<Chapter[]> {
-    return this.chaptersService.findAll();
+  //get chapters from all users created books
+  @Get('public')
+  async findAll(@Query('book_id') bookId: number): Promise<Chapter[]> {
+    if (!bookId)
+      throw new BadRequestException('You must add book id as query param');
+    return this.chaptersService.findAll(bookId);
   }
 
-  @Get(':id')
+  @Get('public/:id')
   async findOne(@Param('id') id: number): Promise<Chapter> {
     return this.chaptersService.findOne(+id);
+  }
+
+  //get chapters from author created books
+  @Get('author')
+  @UseGuards(JwtAuthGuard)
+  async findAllByAuthor(
+    @Request() req: CustomRequest,
+    @Query('book_id') bookId: number,
+  ) {
+    if (!bookId)
+      throw new BadRequestException('You must add book id as query param');
+    return this.chaptersService.findAllByAuthor(req.user, bookId);
+  }
+
+  @Get('author/:id')
+  @UseGuards(JwtAuthGuard)
+  async findOneByAuthor(
+    @Request() req: CustomRequest,
+    @Param('id') chapterId: string,
+  ) {
+    return this.chaptersService.findOneByAuthor(req.user, +chapterId);
   }
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
   async update(
-    @Req() req: CustomRequest,
+    @Request() req: CustomRequest,
     @Param('id') id: string,
     @Body() updateChapterDto: UpdateChapterDto,
   ): Promise<Chapter> {
@@ -58,7 +84,7 @@ export class ChaptersController {
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   async remove(
-    @Req() req: CustomRequest,
+    @Request() req: CustomRequest,
     @Param('id') id: string,
   ): Promise<Chapter> {
     return this.chaptersService.remove(req.user, +id);

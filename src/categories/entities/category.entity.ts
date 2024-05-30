@@ -14,8 +14,6 @@ export class Category {
   title: string;
 
   @Column({
-    nullable: true,
-    default: null,
     type: 'varchar',
     length: 255,
   })

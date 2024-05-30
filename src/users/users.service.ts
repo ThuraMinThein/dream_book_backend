@@ -18,9 +18,13 @@ export class UsersService {
 
   //services
 
-  async findAll(): Promise<User[]> {
-    return this.usersRepository.find();
-  }
+  // async findAll(): Promise<User[]> {
+  //   const users = await this.usersRepository.find();
+  //   if (users.length === 0) {
+  //     throw new NotFoundException('No users exist');
+  //   }
+  //   return users;
+  // }
 
   async findOne(id: number): Promise<User> {
     const user = await this.usersRepository.findOne({
@@ -47,8 +51,8 @@ export class UsersService {
       profilePicture = url;
 
       //delete old image in cloudinary if there is an image exists
-      if (user.profilePicture)
-        await this.cloudinaryService.deleteImage(user.profilePicture);
+      user?.profilePicture &&
+        (await this.cloudinaryService.deleteImage(user.profilePicture));
     }
 
     //update user
@@ -62,9 +66,11 @@ export class UsersService {
 
   async remove(user: User): Promise<User> {
     //delete image in cloudinary if there is an image
-    if (user.profilePicture)
-      await this.cloudinaryService.deleteImage(user.profilePicture);
-    await this.usersRepository.delete(user.userId); //delete user
+    user?.profilePicture &&
+      (await this.cloudinaryService.deleteImage(user.profilePicture));
+
+    //delete user
+    await this.usersRepository.delete(user.userId);
     return user;
   }
 

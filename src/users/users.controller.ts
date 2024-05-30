@@ -1,18 +1,16 @@
 import {
-  Controller,
   Get,
   Body,
   Patch,
-  Param,
   Delete,
-  UseFilters,
-  UseInterceptors,
-  ClassSerializerInterceptor,
-  SerializeOptions,
-  UploadedFile,
-  UseGuards,
-  Req,
   Request,
+  UseGuards,
+  Controller,
+  UseFilters,
+  UploadedFile,
+  UseInterceptors,
+  SerializeOptions,
+  ClassSerializerInterceptor,
 } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
@@ -31,19 +29,28 @@ import { TypeormExceptionFilter } from 'src/common/filters/exceptionfilters/type
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Get()
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({ groups: [GROUP_USER] })
-  async findAll(): Promise<User[]> {
-    return this.usersService.findAll();
+  getCurrentUser(@Request() req: CustomRequest): User {
+    const user = req.user;
+    return user;
   }
 
-  @Get(':id')
-  @UseInterceptors(ClassSerializerInterceptor)
-  @SerializeOptions({ groups: [GROUP_USER] })
-  async findOne(@Param('id') id: string): Promise<User> {
-    return this.usersService.findOne(+id);
-  }
+  // @Get()
+  // @UseInterceptors(ClassSerializerInterceptor)
+  // @SerializeOptions({ groups: [GROUP_USER] })
+  // async findAll(): Promise<User[]> {
+  //   return this.usersService.findAll();
+  // }
+
+  // @Get(':id')
+  // @UseInterceptors(ClassSerializerInterceptor)
+  // @SerializeOptions({ groups: [GROUP_USER] })
+  // async findOne(@Param('id') id: string): Promise<User> {
+  //   return this.usersService.findOne(+id);
+  // }
 
   @Patch()
   @UseGuards(JwtAuthGuard)

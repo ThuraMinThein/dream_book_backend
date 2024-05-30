@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer';
 import {
+  ArrayMinSize,
   IsArray,
   IsEnum,
   IsNotEmpty,
@@ -23,7 +24,8 @@ export class CreateBookDto {
   description: string;
 
   @IsArray()
-  @IsNotEmpty()
+  @IsString({ each: true })
+  @ArrayMinSize(1)
   keywords: string[];
 
   @IsEnum(Status)

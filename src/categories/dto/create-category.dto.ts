@@ -6,12 +6,8 @@ export class CreateCategoryDto {
   @IsNotEmpty()
   title: string;
 
-  @IsString()
-  @IsOptional()
-  icon: string;
-
   @IsNumber()
-  @IsOptional()
+  @IsNotEmpty()
   @Transform(({ obj, key }) => parseInt(obj[key]))
   priority: number;
 }
