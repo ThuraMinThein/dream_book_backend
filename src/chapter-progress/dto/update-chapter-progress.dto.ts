@@ -1,4 +1,7 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateChapterProgressDto } from './create-chapter-progress.dto';
+import { IsNotEmpty, IsNumber } from 'class-validator';
 
-export class UpdateChapterProgressDto extends PartialType(CreateChapterProgressDto) {}
+export class UpdateChapterProgressDto {
+  @IsNumber()
+  @IsNotEmpty()
+  progress: number;
+}

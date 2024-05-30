@@ -1,34 +1,65 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  UseInterceptors,
+  ClassSerializerInterceptor,
+  SerializeOptions,
+  Request,
+} from '@nestjs/common';
 import { ChapterProgressService } from './chapter-progress.service';
 import { CreateChapterProgressDto } from './dto/create-chapter-progress.dto';
 import { UpdateChapterProgressDto } from './dto/update-chapter-progress.dto';
+import { JwtAuthGuard } from '../auth/guard/jwt-auth.gurad';
+import { GROUP_USER } from '../utils/serializers/group.serializer';
+import { CustomRequest } from '../common/interfaces/custom-request.interface';
+import { Progress } from './entities/chapter-progress.entity';
 
-@Controller('chapter-progress')
+@Controller({
+  path: 'chapter-progress',
+  version: '1',
+})
 export class ChapterProgressController {
-  constructor(private readonly chapterProgressService: ChapterProgressService) {}
+  constructor(
+    private readonly chapterProgressService: ChapterProgressService,
+  ) {}
 
   @Post()
-  create(@Body() createChapterProgressDto: CreateChapterProgressDto) {
-    return this.chapterProgressService.create(createChapterProgressDto);
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
+  @SerializeOptions({ groups: [GROUP_USER] })
+  async create(
+    @Request() req: CustomRequest,
+    @Body() createChapterProgressDto: CreateChapterProgressDto,
+  ): Promise<Progress> {
+    return this.chapterProgressService.create(
+      req.user,
+      createChapterProgressDto,
+    );
   }
 
   @Get()
-  findAll() {
-    return this.chapterProgressService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.chapterProgressService.findOne(+id);
+  @UseGuards(JwtAuthGuard)
+  async getCurrentChapter(@Request() req: CustomRequest): Promise<any> {
+    return this.chapterProgressService.getCurrentChapter(req.user);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateChapterProgressDto: UpdateChapterProgressDto) {
-    return this.chapterProgressService.update(+id, updateChapterProgressDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.chapterProgressService.remove(+id);
+  @UseGuards(JwtAuthGuard)
+  async update(
+    @Request() req: CustomRequest,
+    @Param('id') id: string,
+    @Body() updateChapterProgressDto: UpdateChapterProgressDto,
+  ) {
+    return this.chapterProgressService.update(
+      req.user,
+      +id,
+      updateChapterProgressDto,
+    );
   }
 }

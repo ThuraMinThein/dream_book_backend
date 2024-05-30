@@ -44,13 +44,25 @@ export class FavoritesService {
     return favorites;
   }
 
+  async findOneWithUserId(userId: number, id: number) {
+    const favorite = await this.favoritesRepository.findOne({
+      where: {
+        userId,
+        bookId: id,
+      },
+    });
+    return favorite;
+  }
+
   async delete(user: User, bookId: number): Promise<any> {
     const { userId } = user;
+    const favorite = await this.findOneWithUserId(userId, bookId);
+    if (!favorite) throw new NotFoundException('favorite not to delete');
     await this.favoritesRepository.delete({
       userId,
       bookId,
     });
 
-    return { userId, bookId };
+    return favorite;
   }
 }

@@ -9,5 +9,6 @@ import { ChaptersController } from './chapters.controller';
   imports: [TypeOrmModule.forFeature([Chapter]), BooksModule],
   controllers: [ChaptersController],
   providers: [ChaptersService],
+  exports: [ChaptersService],
 })
 export class ChaptersModule {}

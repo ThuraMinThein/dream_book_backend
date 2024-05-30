@@ -20,6 +20,7 @@ export class InterestedCategoriesService {
     user: User,
     createInterestedCategoryDto: CreateInterestedCategoryDto,
   ): Promise<InterestedCategory> {
+    //check if category exists
     const category = await this.categoriesService.findOne(
       createInterestedCategoryDto.categoryId,
     );
@@ -39,6 +40,8 @@ export class InterestedCategoriesService {
         userId: user.userId,
       },
     });
+    if (interestedCategory.length == 0)
+      throw new NotFoundException('No interestedCategory found');
     return interestedCategory;
   }
 
