@@ -75,8 +75,8 @@ export class BooksService {
         category: true,
       },
     });
-    if (!book) {
-      throw new NotFoundException('Book not found');
+    if (book.length === 0) {
+      throw new NotFoundException('No books found');
     }
     return book;
   }
