@@ -26,15 +26,15 @@ export class UsersService {
   //   return users;
   // }
 
-  async findOne(id: number): Promise<User> {
-    const user = await this.usersRepository.findOne({
-      where: {
-        userId: id,
-      },
-    });
-    if (!user) throw new NotFoundException('User not found');
-    return user;
-  }
+  // async findOne(id: number): Promise<User> {
+  //   const user = await this.usersRepository.findOne({
+  //     where: {
+  //       userId: id,
+  //     },
+  //   });
+  //   if (!user) throw new NotFoundException('User not found');
+  //   return user;
+  // }
 
   async update(
     user: User,

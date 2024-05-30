@@ -4,8 +4,11 @@ import { FavoritesController } from './favorites.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Favorite } from './entities/favorite.entity';
 
+import { BooksModule } from '../books/books.module';
+import { UsersModule } from '../users/users.module';
+
 @Module({
-  imports: [TypeOrmModule.forFeature([Favorite])],
+  imports: [TypeOrmModule.forFeature([Favorite]), UsersModule, BooksModule],
   controllers: [FavoritesController],
   providers: [FavoritesService],
 })
