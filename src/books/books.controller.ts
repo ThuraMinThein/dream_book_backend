@@ -55,7 +55,7 @@ export class BooksController {
   @SerializeOptions({ groups: [GROUP_USER] })
   async findAll(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-    @Query('limit', new DefaultValuePipe(2), ParseIntPipe) limit: number,
+    @Query('limit', new DefaultValuePipe(12), ParseIntPipe) limit: number,
   ): Promise<Pagination<Book>> {
     const options: IPaginationOptions = {
       page,
