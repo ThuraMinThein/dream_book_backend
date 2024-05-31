@@ -13,6 +13,12 @@ import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { CategoriesService } from '../categories/categories.service';
 import { CloudinaryService } from '../common/services/cloudinary/cloudinary.service';
+import {
+  IPaginationOptions,
+  Pagination,
+  paginate,
+} from 'nestjs-typeorm-paginate';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class BooksService {
@@ -20,6 +26,7 @@ export class BooksService {
     @InjectRepository(Book) private booksRepository: Repository<Book>,
     private cloudinaryService: CloudinaryService,
     private categoriesService: CategoriesService,
+    private config: ConfigService,
   ) {}
 
   //services
@@ -63,22 +70,23 @@ export class BooksService {
   }
 
   //find books from all users
-  async findAll(): Promise<Book[]> {
-    //have to add pagination
-
-    const book = await this.booksRepository.find({
-      where: {
+  async findAll(options: IPaginationOptions): Promise<Pagination<Book>> {
+    const database = this.config.get('DB_NAME');
+    const qb = this.booksRepository
+      .createQueryBuilder('books')
+      .where('books.status = :status', {
+        db: database,
         status: Status.PUBLISHED,
-      },
-      relations: {
-        user: true,
-        category: true,
-      },
-    });
-    if (book.length === 0) {
+      })
+      .leftJoinAndSelect(`books.user`, 'users')
+      .leftJoinAndSelect(`books.category`, 'categories');
+
+    const paginatedBooks = await paginate<Book>(qb, options);
+
+    if (paginatedBooks.items.length === 0) {
       throw new NotFoundException('No books found');
     }
-    return book;
+    return paginatedBooks;
   }
 
   async findOne(bookId: number): Promise<Book> {

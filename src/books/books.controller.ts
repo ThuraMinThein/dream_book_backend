@@ -13,6 +13,9 @@ import {
   SerializeOptions,
   ClassSerializerInterceptor,
   Request,
+  Query,
+  ParseIntPipe,
+  DefaultValuePipe,
 } from '@nestjs/common';
 import { Book } from './entities/book.entity';
 import { BooksService } from './books.service';
@@ -23,6 +26,7 @@ import { JwtAuthGuard } from '../auth/guard/jwt-auth.gurad';
 import { GROUP_USER } from '../utils/serializers/group.serializer';
 import { CustomRequest } from '../common/interfaces/custom-request.interface';
 import { TypeormExceptionFilter } from '../common/filters/exceptionfilters/typeorm-exception.filter';
+import { IPaginationOptions, Pagination } from 'nestjs-typeorm-paginate';
 
 @Controller({
   path: 'books',
@@ -49,8 +53,15 @@ export class BooksController {
   @Get('public')
   @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({ groups: [GROUP_USER] })
-  async findAll(): Promise<Book[]> {
-    return this.booksService.findAll();
+  async findAll(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(2), ParseIntPipe) limit: number,
+  ): Promise<Pagination<Book>> {
+    const options: IPaginationOptions = {
+      page,
+      limit,
+    };
+    return await this.booksService.findAll(options);
   }
 
   @Get('public/:id')
