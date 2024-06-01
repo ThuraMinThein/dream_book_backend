@@ -76,8 +76,16 @@ export class BooksController {
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({ groups: [GROUP_USER] })
-  async findAllByAuthor(@Request() req: CustomRequest): Promise<Book[]> {
-    return this.booksService.findAllByAuthor(req.user);
+  async findAllByAuthor(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(12), ParseIntPipe) limit: number,
+    @Request() req: CustomRequest,
+  ): Promise<Pagination<Book>> {
+    const options: IPaginationOptions = {
+      page,
+      limit,
+    };
+    return this.booksService.findAllByAuthor(req.user, options);
   }
 
   @Get('author/:id')

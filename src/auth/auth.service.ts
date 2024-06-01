@@ -85,9 +85,10 @@ export class AuthService {
     return token;
   }
 
+  //token expire date
   expiredDate() {
     const today = new Date();
-    const tockenExpiredDate = addDays(today, 90);
-    return tockenExpiredDate;
+    const tokenExpiredDate = addDays(today, 90);
+    return tokenExpiredDate;
   }
 }

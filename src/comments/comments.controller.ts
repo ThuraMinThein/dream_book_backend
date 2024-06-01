@@ -10,6 +10,8 @@ import {
   Query,
   UseGuards,
   Request,
+  ParseIntPipe,
+  BadRequestException,
 } from '@nestjs/common';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
@@ -36,7 +38,11 @@ export class CommentsController {
   }
 
   @Get()
-  async findAll(@Query('book_id') bookId: number): Promise<Comment[]> {
+  async findAll(
+    @Query('book_id', ParseIntPipe) bookId: number,
+  ): Promise<Comment[]> {
+    if (!bookId)
+      throw new BadRequestException('You must add book id as query param');
     return this.commentsService.findAll(bookId);
   }
 
@@ -44,9 +50,18 @@ export class CommentsController {
   @UseGuards(JwtAuthGuard)
   async update(
     @Request() req: CustomRequest,
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateCommentDto: UpdateCommentDto,
-  ) {
-    return this.commentsService.update(req.user, +id, updateCommentDto);
+  ): Promise<Comment> {
+    return this.commentsService.update(req.user, id, updateCommentDto);
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  async remove(
+    @Request() req: CustomRequest,
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<Comment> {
+    return this.commentsService.remove(req.user, id);
   }
 }

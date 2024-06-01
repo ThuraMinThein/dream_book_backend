@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { UpdateInterestedCategoryDto } from './dto/update-interested-category.dto';
 import { User } from '../users/entities/user.entity';
 import { InterestedCategory } from './entities/interested-category.entity';
@@ -6,7 +10,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CategoriesService } from '../categories/categories.service';
 import { CreateInterestedCategoryDto } from './dto/create-interested-category.dto';
-import { use } from 'passport';
 
 @Injectable()
 export class InterestedCategoriesService {
@@ -20,13 +23,23 @@ export class InterestedCategoriesService {
     user: User,
     createInterestedCategoryDto: CreateInterestedCategoryDto,
   ): Promise<InterestedCategory> {
+    //check if the user already create one
+    const hasUser = await this.isUserExists(user.userId);
+    if (hasUser) throw new ConflictException('Duplicate User');
+
     //check if category exists
-    const category = await this.categoriesService.findOne(
-      createInterestedCategoryDto.categoryId,
+    const categories = createInterestedCategoryDto.categoryIds;
+    const allCategories = await Promise.all(
+      categories.map(async (categoryId) => {
+        const category = await this.categoriesService.findOne(categoryId);
+        return category;
+      }),
     );
+    //create interestedCategory
     const interestedCategory = this.interestedCategoriesRepository.create({
       user,
-      category,
+      categoryIds: allCategories.map((category) => category.categoryId),
+      categories: allCategories,
     });
 
     return this.interestedCategoriesRepository.save(interestedCategory);
@@ -39,13 +52,30 @@ export class InterestedCategoriesService {
       where: {
         userId: user.userId,
       },
+      relations: {
+        user: true,
+        categories: true,
+      },
     });
     if (interestedCategory.length == 0)
       throw new NotFoundException('No interestedCategory found');
     return interestedCategory;
   }
 
-  async findOneWithUserId(userId: number, id: number) {
+  async isUserExists(userId: number): Promise<InterestedCategory> {
+    const interestedCategory =
+      await this.interestedCategoriesRepository.findOne({
+        where: {
+          userId,
+        },
+      });
+    return interestedCategory;
+  }
+
+  async findOneWithUserId(
+    userId: number,
+    id: number,
+  ): Promise<InterestedCategory> {
     const interestedCategory =
       await this.interestedCategoriesRepository.findOne({
         where: {

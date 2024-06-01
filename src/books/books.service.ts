@@ -71,15 +71,13 @@ export class BooksService {
 
   //find books from all users
   async findAll(options: IPaginationOptions): Promise<Pagination<Book>> {
-    const database = this.config.get('DB_NAME');
     const qb = this.booksRepository
       .createQueryBuilder('books')
       .where('books.status = :status', {
-        db: database,
         status: Status.PUBLISHED,
       })
-      .leftJoinAndSelect(`books.user`, 'users')
-      .leftJoinAndSelect(`books.category`, 'categories');
+      .leftJoinAndSelect(`books.user`, 'user')
+      .leftJoinAndSelect(`books.category`, 'category');
 
     const paginatedBooks = await paginate<Book>(qb, options);
 
@@ -107,22 +105,25 @@ export class BooksService {
   }
 
   //find books from author
-  async findAllByAuthor(user: User): Promise<Book[]> {
-    const books = await this.booksRepository.find({
-      where: {
-        user: {
-          userId: user.userId,
-        },
-      },
-      relations: {
-        user: true,
-        category: true,
-      },
-    });
-    if (books.length === 0) {
+  async findAllByAuthor(
+    user: User,
+    options: IPaginationOptions,
+  ): Promise<Pagination<Book>> {
+    const qb = this.booksRepository
+      .createQueryBuilder('books')
+      .where('books.status = :status', {
+        status: Status.PUBLISHED,
+      })
+      .leftJoinAndSelect(`books.user`, 'user')
+      .leftJoinAndSelect(`books.category`, 'category')
+      .andWhere('user.userId = :userId', { userId: user.userId });
+
+    const paginatedBooks = await paginate<Book>(qb, options);
+
+    if (paginatedBooks.items.length === 0) {
       throw new NotFoundException('No books found');
     }
-    return books;
+    return paginatedBooks;
   }
 
   async findOneByAuthor(user: User, bookId: number): Promise<Book> {

@@ -1,7 +1,9 @@
-import { IsNotEmpty, IsNumber } from 'class-validator';
+import { ArrayMinSize, ArrayUnique, IsArray, IsInt } from 'class-validator';
 
 export class CreateInterestedCategoryDto {
-  @IsNumber()
-  @IsNotEmpty()
-  categoryId: number;
+  @IsArray()
+  @IsInt({ each: true })
+  @ArrayMinSize(3)
+  @ArrayUnique()
+  categoryIds: number[];
 }

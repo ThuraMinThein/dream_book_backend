@@ -3,6 +3,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
@@ -16,8 +17,8 @@ export class InterestedCategory {
   @Column({ name: 'user_id' })
   userId: number;
 
-  @Column({ name: 'category_id' })
-  categoryId: number;
+  @Column({ name: 'category_ids', type: 'int', array: true })
+  categoryIds: number[];
 
   //relationships
   @ManyToOne(() => User, (user) => user.interestedCategories, {
@@ -26,9 +27,7 @@ export class InterestedCategory {
   @JoinColumn({ name: 'user_id', referencedColumnName: 'userId' })
   user: User;
 
-  @ManyToOne(() => Category, (category) => category.interestedCategories, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn({ name: 'category_id', referencedColumnName: 'categoryId' })
-  category: Category;
+  @OneToMany(() => Category, (category) => category.interestedCategories)
+  @JoinColumn({ name: 'category_ids', referencedColumnName: 'categoryIds' })
+  categories: Category[];
 }

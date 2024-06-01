@@ -1,5 +1,11 @@
 import { Book } from '../../books/entities/book.entity';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { InterestedCategory } from '../../interested-categories/entities/interested-category.entity';
 
 @Entity('categories')
@@ -26,9 +32,12 @@ export class Category {
 
   //relationships
   //a category can have many users interested in it
-  @OneToMany(
+  @ManyToOne(
     () => InterestedCategory,
-    (interestedCategory) => interestedCategory.category,
+    (interestedCategory) => interestedCategory.categories,
+    {
+      onDelete: 'CASCADE',
+    },
   )
   interestedCategories: InterestedCategory[];
 
