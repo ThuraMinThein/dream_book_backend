@@ -70,7 +70,11 @@ export class BooksService {
   }
 
   //find books from all users
-  async findAll(options: IPaginationOptions): Promise<Pagination<Book>> {
+  async findAll(
+    options: IPaginationOptions,
+    search: string,
+    userId: number,
+  ): Promise<Pagination<Book>> {
     const qb = this.booksRepository
       .createQueryBuilder('books')
       .where('books.status = :status', {
@@ -78,6 +82,14 @@ export class BooksService {
       })
       .leftJoinAndSelect(`books.user`, 'user')
       .leftJoinAndSelect(`books.category`, 'category');
+
+    if (search) {
+      qb.andWhere('books.title ILIKE :search', { search: `%${search}%` });
+    }
+
+    if (userId) {
+      qb.andWhere('user.userId = :userId', { userId });
+    }
 
     const paginatedBooks = await paginate<Book>(qb, options);
 

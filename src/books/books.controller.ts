@@ -4,18 +4,18 @@ import {
   Body,
   Patch,
   Param,
+  Query,
   Delete,
+  Request,
   UseGuards,
   Controller,
   UseFilters,
   UploadedFile,
+  ParseIntPipe,
   UseInterceptors,
+  DefaultValuePipe,
   SerializeOptions,
   ClassSerializerInterceptor,
-  Request,
-  Query,
-  ParseIntPipe,
-  DefaultValuePipe,
 } from '@nestjs/common';
 import { Book } from './entities/book.entity';
 import { BooksService } from './books.service';
@@ -24,9 +24,9 @@ import { UpdateBookDto } from './dto/update-book.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.gurad';
 import { GROUP_USER } from '../utils/serializers/group.serializer';
+import { IPaginationOptions, Pagination } from 'nestjs-typeorm-paginate';
 import { CustomRequest } from '../common/interfaces/custom-request.interface';
 import { TypeormExceptionFilter } from '../common/filters/exceptionfilters/typeorm-exception.filter';
-import { IPaginationOptions, Pagination } from 'nestjs-typeorm-paginate';
 
 @Controller({
   path: 'books',
@@ -56,12 +56,14 @@ export class BooksController {
   async findAll(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(12), ParseIntPipe) limit: number,
+    @Query('search') search: string,
+    @Query('user_id') userId: number,
   ): Promise<Pagination<Book>> {
     const options: IPaginationOptions = {
       page,
       limit,
     };
-    return await this.booksService.findAll(options);
+    return await this.booksService.findAll(options, search, userId);
   }
 
   @Get('public/:id')
