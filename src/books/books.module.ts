@@ -6,11 +6,12 @@ import { UsersModule } from '../users/users.module';
 import { BooksController } from './books.controller';
 import { CategoriesModule } from '../categories/categories.module';
 import { CloudinaryService } from '../common/services/cloudinary/cloudinary.service';
+import { ParseNumberArrayPipe } from '../common/pipes/parseNumberArrayPipe.pipe';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Book]), UsersModule, CategoriesModule],
   controllers: [BooksController],
-  providers: [BooksService, CloudinaryService],
+  providers: [BooksService, CloudinaryService, ParseNumberArrayPipe],
   exports: [BooksService],
 })
 export class BooksModule {}

@@ -52,11 +52,25 @@ export class User {
   password: string;
 
   @Column({
+    nullable: true,
+    default: null,
+    name: 'country_code',
+  })
+  countryCode: string;
+
+  @Column({
+    nullable: true,
+    default: null,
+    name: 'local_number',
+  })
+  localNumber: string;
+
+  @Column({
     name: 'phone_number',
     nullable: true,
     default: null,
     type: 'varchar',
-    length: 20,
+    unique: true,
   })
   phoneNumber: string;
 

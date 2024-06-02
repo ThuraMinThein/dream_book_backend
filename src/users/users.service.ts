@@ -41,6 +41,13 @@ export class UsersService {
     newProfilePicture: Express.Multer.File,
     updateUserDto: UpdateUserDto,
   ): Promise<User> {
+    //phone number
+    let phoneNumber: string = user.phoneNumber;
+    const { countryCode, localNumber } = updateUserDto;
+    if (countryCode && localNumber) {
+      phoneNumber = `${countryCode}${localNumber}`;
+    }
+
     //if the user wants to change the image, replace image in cloudinary with new and old image
     let profilePicture = user.profilePicture;
     if (newProfilePicture) {
@@ -59,6 +66,7 @@ export class UsersService {
     const updatedUser = this.usersRepository.create({
       ...user,
       ...updateUserDto,
+      phoneNumber,
       profilePicture,
     });
     return this.usersRepository.save(updatedUser);

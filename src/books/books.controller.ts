@@ -27,6 +27,7 @@ import { GROUP_USER } from '../utils/serializers/group.serializer';
 import { IPaginationOptions, Pagination } from 'nestjs-typeorm-paginate';
 import { CustomRequest } from '../common/interfaces/custom-request.interface';
 import { TypeormExceptionFilter } from '../common/filters/exceptionfilters/typeorm-exception.filter';
+import { ParseNumberArrayPipe } from '../common/pipes/parseNumberArrayPipe.pipe';
 
 @Controller({
   path: 'books',
@@ -58,12 +59,18 @@ export class BooksController {
     @Query('limit', new DefaultValuePipe(12), ParseIntPipe) limit: number,
     @Query('search') search: string,
     @Query('user_id') userId: number,
+    @Query('category_ids', ParseNumberArrayPipe) categoryIds: number[],
   ): Promise<Pagination<Book>> {
     const options: IPaginationOptions = {
       page,
       limit,
     };
-    return await this.booksService.findAll(options, search, userId);
+    return await this.booksService.findAll(
+      options,
+      search,
+      userId,
+      categoryIds,
+    );
   }
 
   @Get('public/:id')

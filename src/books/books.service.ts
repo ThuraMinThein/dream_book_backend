@@ -74,6 +74,7 @@ export class BooksService {
     options: IPaginationOptions,
     search: string,
     userId: number,
+    categoryIds: number[],
   ): Promise<Pagination<Book>> {
     const qb = this.booksRepository
       .createQueryBuilder('books')
@@ -85,6 +86,10 @@ export class BooksService {
 
     if (search) {
       qb.andWhere('books.title ILIKE :search', { search: `%${search}%` });
+    }
+
+    if (categoryIds.length > 0) {
+      qb.andWhere('category.categoryId IN (:...categoryIds)', { categoryIds });
     }
 
     if (userId) {
