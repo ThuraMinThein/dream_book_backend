@@ -3,6 +3,11 @@ import {
   ConflictException,
   NotFoundException,
 } from '@nestjs/common';
+import {
+  IPaginationOptions,
+  Pagination,
+  paginate,
+} from 'nestjs-typeorm-paginate';
 import slugify from 'slugify';
 import { Repository } from 'typeorm';
 import { Book } from './entities/book.entity';
@@ -11,14 +16,10 @@ import { Status } from '../utils/enums/status.enum';
 import { User } from '../users/entities/user.entity';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
+import { Favorite } from '../favorites/entities/favorite.entity';
 import { CategoriesService } from '../categories/categories.service';
 import { CloudinaryService } from '../common/services/cloudinary/cloudinary.service';
-import {
-  IPaginationOptions,
-  Pagination,
-  paginate,
-} from 'nestjs-typeorm-paginate';
-import { ConfigService } from '@nestjs/config';
+import { InterestedCategoriesService } from '../interested-categories/interested-categories.service';
 
 @Injectable()
 export class BooksService {
@@ -26,7 +27,7 @@ export class BooksService {
     @InjectRepository(Book) private booksRepository: Repository<Book>,
     private cloudinaryService: CloudinaryService,
     private categoriesService: CategoriesService,
-    private config: ConfigService,
+    private interestedCategoriesService: InterestedCategoriesService,
   ) {}
 
   //services
@@ -69,11 +70,31 @@ export class BooksService {
     return this.booksRepository.save(newBook);
   }
 
+  //get recommendted books by user interested categories
+  async getRecommendedBookByUser(user: User): Promise<Book[]> {
+    //fint users categories
+    const userInterestedCategories =
+      await this.interestedCategoriesService.getInterestedCategoriesByUser(
+        user,
+      );
+
+    const recommendedBooks = await this.booksRepository
+      .createQueryBuilder('books')
+      .innerJoinAndSelect('books.category', 'category')
+      .where('category.categoryId IN (:...categoryIds)', {
+        categoryIds: userInterestedCategories.categoryIds,
+      })
+      .getMany();
+
+    return recommendedBooks;
+  }
+
   //find books from all users
   async findAll(
     options: IPaginationOptions,
     search: string,
     userId: number,
+    popular: boolean,
     categoryIds: number[],
   ): Promise<Pagination<Book>> {
     const qb = this.booksRepository
@@ -94,6 +115,21 @@ export class BooksService {
 
     if (userId) {
       qb.andWhere('user.userId = :userId', { userId });
+    }
+
+    if (popular) {
+      qb.leftJoinAndSelect(
+        (subQuery) =>
+          subQuery
+            .select('favorites.book_id')
+            .addSelect('COUNT(favorites.book_id)', 'count')
+            .from(Favorite, 'favorites')
+            .groupBy('favorites.book_id'),
+        'favorites',
+        'favorites.book_id = books.book_id',
+      )
+        .orderBy('favorites.count', 'DESC')
+        .getMany();
     }
 
     const paginatedBooks = await paginate<Book>(qb, options);

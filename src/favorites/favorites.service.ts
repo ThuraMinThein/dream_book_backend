@@ -1,11 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateFavoriteDto } from './dto/create-favorite.dto';
-import { UpdateFavoriteDto } from './dto/update-favorite.dto';
-import { User } from '../users/entities/user.entity';
+import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { User } from '../users/entities/user.entity';
 import { BooksService } from '../books/books.service';
 import { Favorite } from './entities/favorite.entity';
-import { Repository } from 'typeorm';
+import { CreateFavoriteDto } from './dto/create-favorite.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
 
 @Injectable()
 export class FavoritesService {

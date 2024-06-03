@@ -45,19 +45,18 @@ export class InterestedCategoriesService {
     return this.interestedCategoriesRepository.save(interestedCategory);
   }
 
-  async getAllInterestedCategoriesByUser(
-    user: User,
-  ): Promise<InterestedCategory[]> {
-    const interestedCategory = await this.interestedCategoriesRepository.find({
-      where: {
-        userId: user.userId,
-      },
-      relations: {
-        user: true,
-        categories: true,
-      },
-    });
-    if (interestedCategory.length == 0)
+  async getInterestedCategoriesByUser(user: User): Promise<InterestedCategory> {
+    const interestedCategory =
+      await this.interestedCategoriesRepository.findOne({
+        where: {
+          userId: user.userId,
+        },
+        relations: {
+          user: true,
+          categories: true,
+        },
+      });
+    if (!interestedCategory)
       throw new NotFoundException('No interestedCategory found');
     return interestedCategory;
   }

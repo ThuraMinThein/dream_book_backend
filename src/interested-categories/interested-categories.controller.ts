@@ -52,8 +52,8 @@ export class InterestedCategoriesController {
   @SerializeOptions({ groups: [GROUP_USER] })
   async getAllInterestedCategoriesByUser(
     @Request() req: CustomRequest,
-  ): Promise<InterestedCategory[]> {
-    return this.interestedCategoriesService.getAllInterestedCategoriesByUser(
+  ): Promise<InterestedCategory> {
+    return this.interestedCategoriesService.getInterestedCategoriesByUser(
       req.user,
     );
   }
