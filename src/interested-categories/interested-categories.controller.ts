@@ -12,6 +12,7 @@ import {
   Request,
   ClassSerializerInterceptor,
   SerializeOptions,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { InterestedCategoriesService } from './interested-categories.service';
 import { CreateInterestedCategoryDto } from './dto/create-interested-category.dto';
@@ -39,7 +40,7 @@ export class InterestedCategoriesController {
   async create(
     @Request() req: CustomRequest,
     @Body() createInterestedCategoryDto: CreateInterestedCategoryDto,
-  ) {
+  ): Promise<InterestedCategory[]> {
     return this.interestedCategoriesService.create(
       req.user,
       createInterestedCategoryDto,
@@ -50,9 +51,9 @@ export class InterestedCategoriesController {
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({ groups: [GROUP_USER] })
-  async getAllInterestedCategoriesByUser(
+  async getInterestedCategoriesByUser(
     @Request() req: CustomRequest,
-  ): Promise<InterestedCategory> {
+  ): Promise<InterestedCategory[]> {
     return this.interestedCategoriesService.getInterestedCategoriesByUser(
       req.user,
     );
@@ -60,12 +61,12 @@ export class InterestedCategoriesController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
-  // @UseInterceptors(ClassSerializerInterceptor)
-  // @SerializeOptions({groups: [GROUP_USER]})
+  @UseInterceptors(ClassSerializerInterceptor)
+  @SerializeOptions({ groups: [GROUP_USER] })
   async delete(
     @Request() req: CustomRequest,
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
   ): Promise<InterestedCategory> {
-    return this.interestedCategoriesService.delete(req.user, +id);
+    return this.interestedCategoriesService.delete(req.user, id);
   }
 }

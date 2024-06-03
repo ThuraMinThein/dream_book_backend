@@ -18,8 +18,12 @@ export class FavoritesService {
     user: User,
     createFavoriteDto: CreateFavoriteDto,
   ): Promise<Favorite> {
+    const { bookId } = createFavoriteDto;
     //check if book exists
-    const book = await this.booksService.findOne(createFavoriteDto.bookId);
+    const book = await this.booksService.findOne(bookId);
+
+    //plus one favorite in book
+    await this.booksService.increaseFavorite(bookId);
 
     const favorite = this.favoritesRepository.create({
       user,
@@ -57,6 +61,8 @@ export class FavoritesService {
     const { userId } = user;
     const favorite = await this.findOneWithUserId(userId, bookId);
     if (!favorite) throw new NotFoundException('favorite not to delete');
+    //minus one favorite in book
+    await this.booksService.decreaseFavorite(bookId);
     await this.favoritesRepository.delete({
       userId,
       bookId,

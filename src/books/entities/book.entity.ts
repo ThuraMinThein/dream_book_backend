@@ -58,6 +58,13 @@ export class Book {
   keywords: string[];
 
   @Column({
+    name: 'favorite_count',
+    nullable: true,
+    default: 0,
+  })
+  favoriteCount: number;
+
+  @Column({
     type: 'enum',
     enum: Status,
     default: Status.DRAFT,

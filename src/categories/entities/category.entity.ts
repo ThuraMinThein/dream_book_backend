@@ -2,6 +2,7 @@ import { Book } from '../../books/entities/book.entity';
 import {
   Column,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -32,12 +33,9 @@ export class Category {
 
   //relationships
   //a category can have many users interested in it
-  @ManyToOne(
+  @OneToMany(
     () => InterestedCategory,
-    (interestedCategory) => interestedCategory.categories,
-    {
-      onDelete: 'CASCADE',
-    },
+    (interestedCategory) => interestedCategory.category,
   )
   interestedCategories: InterestedCategory[];
 

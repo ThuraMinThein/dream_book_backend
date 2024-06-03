@@ -17,8 +17,8 @@ export class InterestedCategory {
   @Column({ name: 'user_id' })
   userId: number;
 
-  @Column({ name: 'category_ids', type: 'int', array: true })
-  categoryIds: number[];
+  @Column({ name: 'category_id' })
+  categoryId: number;
 
   //relationships
   @ManyToOne(() => User, (user) => user.interestedCategories, {
@@ -27,7 +27,9 @@ export class InterestedCategory {
   @JoinColumn({ name: 'user_id', referencedColumnName: 'userId' })
   user: User;
 
-  @OneToMany(() => Category, (category) => category.interestedCategories)
-  @JoinColumn({ name: 'category_ids', referencedColumnName: 'categoryIds' })
-  categories: Category[];
+  @ManyToOne(() => Category, (category) => category.interestedCategories, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'category_id', referencedColumnName: 'categoryId' })
+  category: Category;
 }

@@ -28,6 +28,7 @@ import { IPaginationOptions, Pagination } from 'nestjs-typeorm-paginate';
 import { CustomRequest } from '../common/interfaces/custom-request.interface';
 import { ParseNumberArrayPipe } from '../common/pipes/parseNumberArrayPipe.pipe';
 import { TypeormExceptionFilter } from '../common/filters/exceptionfilters/typeorm-exception.filter';
+import { JwtOptionalGuard } from '../auth/guard/jwt-optional.guard';
 
 @Controller({
   path: 'books',
@@ -52,15 +53,22 @@ export class BooksController {
 
   //recommended books
   @Get('recommended')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtOptionalGuard)
   async getRecommendedBookByUser(
     @Request() req: CustomRequest,
-  ): Promise<Book[]> {
-    return this.booksService.getRecommendedBookByUser(req.user);
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(12), ParseIntPipe) limit: number,
+  ): Promise<Pagination<Book>> {
+    const options: IPaginationOptions = {
+      page,
+      limit,
+    };
+    return this.booksService.getRecommendedBookByUser(req.user, options);
   }
 
   //get books from all users
   @Get('public')
+  @UseGuards(JwtOptionalGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({ groups: [GROUP_USER] })
   async findAll(
@@ -85,6 +93,7 @@ export class BooksController {
   }
 
   @Get('public/:id')
+  @UseGuards(JwtOptionalGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({ groups: [GROUP_USER] })
   async findOne(@Param('id') bookId: string): Promise<Book> {

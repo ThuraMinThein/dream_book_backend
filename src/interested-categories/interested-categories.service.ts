@@ -3,12 +3,11 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { UpdateInterestedCategoryDto } from './dto/update-interested-category.dto';
-import { User } from '../users/entities/user.entity';
-import { InterestedCategory } from './entities/interested-category.entity';
-import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from '../users/entities/user.entity';
 import { CategoriesService } from '../categories/categories.service';
+import { InterestedCategory } from './entities/interested-category.entity';
 import { CreateInterestedCategoryDto } from './dto/create-interested-category.dto';
 
 @Injectable()
@@ -22,53 +21,55 @@ export class InterestedCategoriesService {
   async create(
     user: User,
     createInterestedCategoryDto: CreateInterestedCategoryDto,
-  ): Promise<InterestedCategory> {
-    //check if the user already create one
-    const hasUser = await this.isUserExists(user.userId);
-    if (hasUser) throw new ConflictException('Duplicate User');
-
-    //check if category exists
+  ): Promise<InterestedCategory[]> {
     const categories = createInterestedCategoryDto.categoryIds;
-    const allCategories = await Promise.all(
-      categories.map(async (categoryId) => {
-        const category = await this.categoriesService.findOne(categoryId);
-        return category;
-      }),
-    );
-    //create interestedCategory
-    const interestedCategory = this.interestedCategoriesRepository.create({
-      user,
-      categoryIds: allCategories.map((category) => category.categoryId),
-      categories: allCategories,
-    });
 
-    return this.interestedCategoriesRepository.save(interestedCategory);
+    for (let i = 0; i < categories.length; i++) {
+      //check if category exists
+      const category = await this.categoriesService.findOne(categories[i]);
+
+      //check for duplicate user category
+      await this.isDuplicateUserCategory(user.userId, categories[i]);
+
+      //create interestedCategory
+      const interestedCategory = this.interestedCategoriesRepository.create({
+        user,
+        category,
+      });
+      await this.interestedCategoriesRepository.save(interestedCategory);
+    }
+
+    const returnData = await this.getInterestedCategoriesByUser(user);
+
+    return returnData;
   }
 
-  async getInterestedCategoriesByUser(user: User): Promise<InterestedCategory> {
-    const interestedCategory =
-      await this.interestedCategoriesRepository.findOne({
-        where: {
-          userId: user.userId,
-        },
-        relations: {
-          user: true,
-          categories: true,
-        },
-      });
-    if (!interestedCategory)
-      throw new NotFoundException('No interestedCategory found');
+  async getInterestedCategoriesByUser(
+    user: User,
+  ): Promise<InterestedCategory[]> {
+    if (!user) return [];
+    const interestedCategory = await this.interestedCategoriesRepository.find({
+      where: {
+        userId: user.userId,
+      },
+      relations: {
+        user: true,
+        category: true,
+      },
+    });
     return interestedCategory;
   }
 
-  async isUserExists(userId: number): Promise<InterestedCategory> {
+  async isDuplicateUserCategory(userId: number, categoryId: number) {
     const interestedCategory =
       await this.interestedCategoriesRepository.findOne({
         where: {
           userId,
+          categoryId,
         },
       });
-    return interestedCategory;
+    if (interestedCategory)
+      throw new ConflictException('Duplicate user category');
   }
 
   async findOneWithUserId(

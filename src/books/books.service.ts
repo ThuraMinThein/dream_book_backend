@@ -4,9 +4,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
-  IPaginationOptions,
-  Pagination,
   paginate,
+  Pagination,
+  IPaginationOptions,
 } from 'nestjs-typeorm-paginate';
 import slugify from 'slugify';
 import { Repository } from 'typeorm';
@@ -71,22 +71,34 @@ export class BooksService {
   }
 
   //get recommendted books by user interested categories
-  async getRecommendedBookByUser(user: User): Promise<Book[]> {
-    //fint users categories
-    const userInterestedCategories =
+  async getRecommendedBookByUser(
+    user: User,
+    options: IPaginationOptions,
+  ): Promise<Pagination<Book>> {
+    const qb = this.booksRepository
+      .createQueryBuilder('books')
+      .where('books.status = :status', {
+        status: Status.PUBLISHED,
+      })
+      .leftJoinAndSelect(`books.user`, 'user')
+      .leftJoinAndSelect(`books.category`, 'category');
+
+    const interestedCategories =
       await this.interestedCategoriesService.getInterestedCategoriesByUser(
         user,
       );
-
-    const recommendedBooks = await this.booksRepository
-      .createQueryBuilder('books')
-      .innerJoinAndSelect('books.category', 'category')
-      .where('category.categoryId IN (:...categoryIds)', {
-        categoryIds: userInterestedCategories.categoryIds,
-      })
-      .getMany();
-
-    return recommendedBooks;
+    if (interestedCategories.length > 0) {
+      const categories = interestedCategories.map(
+        (category) => category.categoryId,
+      );
+      qb.andWhere('books.category IN (:...categories)', {
+        categories,
+      });
+    } else {
+      qb.orderBy('books.created_at', 'DESC');
+    }
+    const paginatedBooks = await paginate<Book>(qb, options);
+    return paginatedBooks;
   }
 
   //find books from all users
@@ -105,8 +117,14 @@ export class BooksService {
       .leftJoinAndSelect(`books.user`, 'user')
       .leftJoinAndSelect(`books.category`, 'category');
 
+    let searchResult = [];
     if (search) {
-      qb.andWhere('books.title ILIKE :search', { search: `%${search}%` });
+      searchResult = await qb
+        .andWhere('books.title ILIKE :search', { search: `%${search}%` })
+        .getMany();
+    }
+    if (searchResult.length === 0 && search) {
+      qb.where('books.description ILIKE :search', { search: `%${search}%` });
     }
 
     if (categoryIds.length > 0) {
@@ -118,18 +136,9 @@ export class BooksService {
     }
 
     if (popular) {
-      qb.leftJoinAndSelect(
-        (subQuery) =>
-          subQuery
-            .select('favorites.book_id')
-            .addSelect('COUNT(favorites.book_id)', 'count')
-            .from(Favorite, 'favorites')
-            .groupBy('favorites.book_id'),
-        'favorites',
-        'favorites.book_id = books.book_id',
-      )
-        .orderBy('favorites.count', 'DESC')
-        .getMany();
+      qb.orderBy('books.favoriteCount', 'DESC');
+    } else {
+      qb.orderBy('books.bookId', 'DESC');
     }
 
     const paginatedBooks = await paginate<Book>(qb, options);
@@ -164,9 +173,6 @@ export class BooksService {
   ): Promise<Pagination<Book>> {
     const qb = this.booksRepository
       .createQueryBuilder('books')
-      .where('books.status = :status', {
-        status: Status.PUBLISHED,
-      })
       .leftJoinAndSelect(`books.user`, 'user')
       .leftJoinAndSelect(`books.category`, 'category')
       .andWhere('user.userId = :userId', { userId: user.userId });
@@ -279,5 +285,28 @@ export class BooksService {
       },
     });
     return book;
+  }
+
+  async increaseFavorite(bookId: number) {
+    const book = await this.booksRepository.findOne({ where: { bookId } });
+    const favoriteCount = book.favoriteCount + 1;
+    const increasedFavorite = this.booksRepository.create({
+      ...book,
+      favoriteCount,
+    });
+    return this.booksRepository.save(increasedFavorite);
+  }
+
+  async decreaseFavorite(bookId: number) {
+    const book = await this.booksRepository.findOne({ where: { bookId } });
+    let favoriteCount = book.favoriteCount;
+    if (favoriteCount > 0) {
+      favoriteCount - 1;
+    }
+    const decreasedFavorite = this.booksRepository.create({
+      ...book,
+      favoriteCount,
+    });
+    return this.booksRepository.save(decreasedFavorite);
   }
 }
