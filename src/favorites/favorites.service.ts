@@ -23,6 +23,12 @@ export class FavoritesService {
     //check if book exists
     const book = await this.booksService.findOne(bookId);
 
+    //check if the user already set the book to favorite
+    const isUserSetFavorite = await this.findOneWithUserIdAndBookId(
+      user.userId,
+      bookId,
+    );
+    if (isUserSetFavorite) return;
     //plus one favorite in book
     await this.booksService.increaseFavorite(bookId);
 
@@ -54,6 +60,10 @@ export class FavoritesService {
         userId,
         bookId,
       },
+      relations: {
+        user: true,
+        book: true,
+      },
     });
     return favorite;
   }
@@ -61,7 +71,7 @@ export class FavoritesService {
   async delete(user: User, bookId: number): Promise<any> {
     const { userId } = user;
     const favorite = await this.findOneWithUserIdAndBookId(userId, bookId);
-    if (!favorite) throw new NotFoundException('favorite not to delete');
+    if (!favorite) throw new NotFoundException('favorite not found to delete');
     //minus one favorite in book
     await this.booksService.decreaseFavorite(bookId);
     await this.favoritesRepository.delete({

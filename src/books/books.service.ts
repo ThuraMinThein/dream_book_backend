@@ -332,7 +332,7 @@ export class BooksService {
     const book = await this.booksRepository.findOne({ where: { bookId } });
     let favoriteCount = book.favoriteCount;
     if (favoriteCount > 0) {
-      favoriteCount - 1;
+      favoriteCount--;
     }
     const decreasedFavorite = this.booksRepository.create({
       ...book,
