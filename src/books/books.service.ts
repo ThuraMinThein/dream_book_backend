@@ -20,6 +20,7 @@ import { Favorite } from '../favorites/entities/favorite.entity';
 import { CategoriesService } from '../categories/categories.service';
 import { CloudinaryService } from '../common/services/cloudinary/cloudinary.service';
 import { InterestedCategoriesService } from '../interested-categories/interested-categories.service';
+import { SortBy } from '../utils/enums/sortBy.enum';
 
 @Injectable()
 export class BooksService {
@@ -120,6 +121,7 @@ export class BooksService {
   async findAll(
     options: IPaginationOptions,
     search: string,
+    sortBy: SortBy,
     userId: number,
     popular: boolean,
     categoryIds: number[],
@@ -157,8 +159,23 @@ export class BooksService {
 
     if (popular) {
       qb.orderBy('books.favoriteCount', 'DESC');
-    } else {
-      qb.orderBy('books.created_at', 'DESC');
+    }
+
+    if (sortBy) {
+      switch (sortBy) {
+        case SortBy.ATOZ:
+          qb.orderBy('books.title', 'ASC');
+          break;
+        case SortBy.ZTOA:
+          qb.orderBy('books.title', 'DESC');
+          break;
+        case SortBy.LATEST:
+          qb.orderBy('books.created_at', 'DESC');
+          break;
+
+        default:
+          break;
+      }
     }
 
     const paginatedBooks = await paginate<Book>(qb, options);

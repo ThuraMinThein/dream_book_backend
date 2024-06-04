@@ -16,6 +16,7 @@ import {
   DefaultValuePipe,
   SerializeOptions,
   ClassSerializerInterceptor,
+  ParseEnumPipe,
 } from '@nestjs/common';
 import { Book } from './entities/book.entity';
 import { BooksService } from './books.service';
@@ -30,6 +31,7 @@ import { IPaginationOptions, Pagination } from 'nestjs-typeorm-paginate';
 import { CustomRequest } from '../common/interfaces/custom-request.interface';
 import { ParseNumberArrayPipe } from '../common/pipes/parseNumberArrayPipe.pipe';
 import { TypeormExceptionFilter } from '../common/filters/exceptionfilters/typeorm-exception.filter';
+import { SortBy } from '../utils/enums/sortBy.enum';
 
 @Controller({
   path: 'books',
@@ -75,11 +77,12 @@ export class BooksController {
   async findAll(
     @Request() req: CustomRequest,
     @Query('search') search: string,
-    @Query('user_id', new ParseNumberPipe('user_id')) userId: number,
     @Query('popular', new DefaultValuePipe(false)) popular: boolean,
+    @Query('user_id', new ParseNumberPipe('user_id')) userId: number,
     @Query('category_ids', ParseNumberArrayPipe) categoryIds: number[],
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(12), ParseIntPipe) limit: number,
+    @Query('sortBy', new DefaultValuePipe(SortBy.DEFAULT)) sortBy: SortBy,
   ): Promise<Pagination<Book>> {
     const options: IPaginationOptions = {
       page,
@@ -88,6 +91,7 @@ export class BooksController {
     return await this.booksService.findAll(
       options,
       search,
+      sortBy,
       userId,
       popular,
       categoryIds,
