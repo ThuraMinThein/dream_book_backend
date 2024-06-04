@@ -140,7 +140,11 @@ export class BooksService {
         .getMany();
     }
     if (searchResult.length === 0 && search) {
-      qb.where('books.description ILIKE :search', { search: `%${search}%` });
+      qb.where('books.description ILIKE :search', {
+        search: `%${search}%`,
+      }).andWhere('books.status = :status', {
+        status: Status.PUBLISHED,
+      });
     }
 
     if (categoryIds.length > 0) {
@@ -154,7 +158,7 @@ export class BooksService {
     if (popular) {
       qb.orderBy('books.favoriteCount', 'DESC');
     } else {
-      qb.orderBy('books.bookId', 'DESC');
+      qb.orderBy('books.created_at', 'DESC');
     }
 
     const paginatedBooks = await paginate<Book>(qb, options);
