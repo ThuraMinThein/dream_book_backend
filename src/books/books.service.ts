@@ -172,9 +172,6 @@ export class BooksService {
         case SortBy.LATEST:
           qb.orderBy('books.created_at', 'DESC');
           break;
-
-        default:
-          break;
       }
     }
 
@@ -221,6 +218,7 @@ export class BooksService {
   //find books from author
   async findAllByAuthor(
     user: User,
+    sortBy: SortBy,
     options: IPaginationOptions,
   ): Promise<Pagination<Book>> {
     const qb = this.booksRepository
@@ -228,6 +226,20 @@ export class BooksService {
       .leftJoinAndSelect(`books.user`, 'user')
       .leftJoinAndSelect(`books.category`, 'category')
       .andWhere('user.userId = :userId', { userId: user.userId });
+
+    if (sortBy) {
+      switch (sortBy) {
+        case SortBy.ATOZ:
+          qb.orderBy('books.title', 'ASC');
+          break;
+        case SortBy.ZTOA:
+          qb.orderBy('books.title', 'DESC');
+          break;
+        case SortBy.LATEST:
+          qb.orderBy('books.created_at', 'DESC');
+          break;
+      }
+    }
 
     const paginatedBooks = await paginate<Book>(qb, options);
 

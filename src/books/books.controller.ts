@@ -16,7 +16,6 @@ import {
   DefaultValuePipe,
   SerializeOptions,
   ClassSerializerInterceptor,
-  ParseEnumPipe,
 } from '@nestjs/common';
 import { Book } from './entities/book.entity';
 import { BooksService } from './books.service';
@@ -118,13 +117,14 @@ export class BooksController {
   async findAllByAuthor(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(12), ParseIntPipe) limit: number,
+    @Query('sortBy', new DefaultValuePipe(SortBy.DEFAULT)) sortBy: SortBy,
     @Request() req: CustomRequest,
   ): Promise<Pagination<Book>> {
     const options: IPaginationOptions = {
       page,
       limit,
     };
-    return this.booksService.findAllByAuthor(req.user, options);
+    return this.booksService.findAllByAuthor(req.user, sortBy, options);
   }
 
   @Get('author/:id')
