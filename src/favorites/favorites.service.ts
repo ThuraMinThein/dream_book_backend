@@ -14,6 +14,7 @@ export class FavoritesService {
     private booksService: BooksService,
   ) {}
 
+  //services
   async create(
     user: User,
     createFavoriteDto: CreateFavoriteDto,
@@ -37,21 +38,21 @@ export class FavoritesService {
       where: {
         userId: user.userId,
       },
-      //   relations: {
-      //     user: true,
-      //     book: true,
-      //   },
+      relations: {
+        user: true,
+        book: true,
+      },
     });
     if (favorites.length === 0)
       throw new NotFoundException("This user doesn't have any favorite book");
     return favorites;
   }
 
-  async findOneWithUserId(userId: number, id: number) {
+  async findOneWithUserIdAndBookId(userId: number, bookId: number) {
     const favorite = await this.favoritesRepository.findOne({
       where: {
         userId,
-        bookId: id,
+        bookId,
       },
     });
     return favorite;
@@ -59,7 +60,7 @@ export class FavoritesService {
 
   async delete(user: User, bookId: number): Promise<any> {
     const { userId } = user;
-    const favorite = await this.findOneWithUserId(userId, bookId);
+    const favorite = await this.findOneWithUserIdAndBookId(userId, bookId);
     if (!favorite) throw new NotFoundException('favorite not to delete');
     //minus one favorite in book
     await this.booksService.decreaseFavorite(bookId);

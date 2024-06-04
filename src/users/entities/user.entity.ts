@@ -1,10 +1,10 @@
 import {
   Column,
-  CreateDateColumn,
   Entity,
   OneToMany,
-  PrimaryGeneratedColumn,
+  CreateDateColumn,
   UpdateDateColumn,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Expose } from 'class-transformer';
 import { Gender } from '../../utils/enums/gender.enum';

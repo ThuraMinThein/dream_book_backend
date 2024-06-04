@@ -1,13 +1,13 @@
 import {
   Column,
-  CreateDateColumn,
-  DeleteDateColumn,
   Entity,
-  JoinColumn,
   ManyToOne,
   OneToMany,
-  PrimaryGeneratedColumn,
+  JoinColumn,
+  DeleteDateColumn,
+  CreateDateColumn,
   UpdateDateColumn,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Status } from '../../utils/enums/status.enum';
 import { User } from '../../users/entities/user.entity';
@@ -63,6 +63,9 @@ export class Book {
     default: 0,
   })
   favoriteCount: number;
+
+  @Column({ name: 'is_favorite', nullable: true, default: false })
+  isFavorite: boolean;
 
   @Column({
     type: 'enum',

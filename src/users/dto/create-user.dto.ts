@@ -1,13 +1,12 @@
 import {
-  IsEmail,
   IsEnum,
-  IsNotEmpty,
-  IsOptional,
-  IsPhoneNumber,
-  IsString,
+  IsEmail,
   Matches,
+  IsString,
   MaxLength,
   MinLength,
+  IsNotEmpty,
+  IsOptional,
 } from 'class-validator';
 import { Gender } from '../../utils/enums/gender.enum';
 

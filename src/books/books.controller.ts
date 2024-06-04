@@ -24,11 +24,12 @@ import { UpdateBookDto } from './dto/update-book.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.gurad';
 import { GROUP_USER } from '../utils/serializers/group.serializer';
+import { JwtOptionalGuard } from '../auth/guard/jwt-optional.guard';
+import { ParseNumberPipe } from '../common/pipes/parseNumberPipe.pipe';
 import { IPaginationOptions, Pagination } from 'nestjs-typeorm-paginate';
 import { CustomRequest } from '../common/interfaces/custom-request.interface';
 import { ParseNumberArrayPipe } from '../common/pipes/parseNumberArrayPipe.pipe';
 import { TypeormExceptionFilter } from '../common/filters/exceptionfilters/typeorm-exception.filter';
-import { JwtOptionalGuard } from '../auth/guard/jwt-optional.guard';
 
 @Controller({
   path: 'books',
@@ -72,8 +73,9 @@ export class BooksController {
   @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({ groups: [GROUP_USER] })
   async findAll(
+    @Request() req: CustomRequest,
     @Query('search') search: string,
-    @Query('user_id') userId: number,
+    @Query('user_id', new ParseNumberPipe('user_id')) userId: number,
     @Query('popular', new DefaultValuePipe(false)) popular: boolean,
     @Query('category_ids', ParseNumberArrayPipe) categoryIds: number[],
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
@@ -89,6 +91,7 @@ export class BooksController {
       userId,
       popular,
       categoryIds,
+      req.user,
     );
   }
 
@@ -96,8 +99,11 @@ export class BooksController {
   @UseGuards(JwtOptionalGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({ groups: [GROUP_USER] })
-  async findOne(@Param('id') bookId: string): Promise<Book> {
-    return this.booksService.findOne(+bookId);
+  async findOne(
+    @Request() req: CustomRequest,
+    @Param('id', ParseIntPipe) bookId: number,
+  ): Promise<Book> {
+    return this.booksService.findOne(bookId, req.user);
   }
 
   //get books from author
@@ -123,9 +129,9 @@ export class BooksController {
   @SerializeOptions({ groups: [GROUP_USER] })
   async findOneByAuthor(
     @Request() req: CustomRequest,
-    @Param('id') bookId: CustomRequest,
+    @Param('id', ParseIntPipe) bookId: number,
   ): Promise<Book> {
-    return this.booksService.findOneByAuthor(req.user, +bookId);
+    return this.booksService.findOneByAuthor(req.user, bookId);
   }
 
   @Patch(':id')
@@ -135,13 +141,13 @@ export class BooksController {
   @SerializeOptions({ groups: [GROUP_USER] })
   async update(
     @Request() req: CustomRequest,
-    @Param('id') bookId: string,
+    @Param('id', ParseIntPipe) bookId: number,
     @UploadedFile() coverImage: Express.Multer.File,
     @Body() updateBookDto: UpdateBookDto,
   ): Promise<Book> {
     return this.booksService.update(
       req.user,
-      +bookId,
+      bookId,
       coverImage,
       updateBookDto,
     );
@@ -153,8 +159,8 @@ export class BooksController {
   @SerializeOptions({ groups: [GROUP_USER] })
   async remove(
     @Request() req: CustomRequest,
-    @Param('id') bookId: string,
+    @Param('id', ParseIntPipe) bookId: number,
   ): Promise<Book> {
-    return this.booksService.remove(req.user, +bookId);
+    return this.booksService.remove(req.user, bookId);
   }
 }

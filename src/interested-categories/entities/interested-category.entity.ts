@@ -1,9 +1,8 @@
 import {
   Column,
   Entity,
-  JoinColumn,
   ManyToOne,
-  OneToMany,
+  JoinColumn,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';

@@ -25,6 +25,8 @@ import { InterestedCategoriesService } from '../interested-categories/interested
 export class BooksService {
   constructor(
     @InjectRepository(Book) private booksRepository: Repository<Book>,
+    @InjectRepository(Favorite)
+    private favoritesRepository: Repository<Favorite>,
     private cloudinaryService: CloudinaryService,
     private categoriesService: CategoriesService,
     private interestedCategoriesService: InterestedCategoriesService,
@@ -98,6 +100,19 @@ export class BooksService {
       qb.orderBy('books.created_at', 'DESC');
     }
     const paginatedBooks = await paginate<Book>(qb, options);
+    if (paginatedBooks.items.length === 0) {
+      throw new NotFoundException('No books found');
+    }
+
+    //jf user logged in check if the book is user's favorited book
+    let isFavorite: boolean = false;
+    if (user) {
+      for (const book of paginatedBooks.items) {
+        isFavorite = await this.isFavorite(user.userId, book.bookId);
+        book.isFavorite = isFavorite;
+      }
+    }
+
     return paginatedBooks;
   }
 
@@ -108,6 +123,7 @@ export class BooksService {
     userId: number,
     popular: boolean,
     categoryIds: number[],
+    user?: User,
   ): Promise<Pagination<Book>> {
     const qb = this.booksRepository
       .createQueryBuilder('books')
@@ -146,10 +162,19 @@ export class BooksService {
     if (paginatedBooks.items.length === 0) {
       throw new NotFoundException('No books found');
     }
+
+    //jf user logged in check if the book is user's favorited book
+    let isFavorite: boolean = false;
+    if (user) {
+      for (const book of paginatedBooks.items) {
+        isFavorite = await this.isFavorite(user.userId, book.bookId);
+        book.isFavorite = isFavorite;
+      }
+    }
     return paginatedBooks;
   }
 
-  async findOne(bookId: number): Promise<Book> {
+  async findOne(bookId: number, user?: User): Promise<Book> {
     const book = await this.booksRepository.findOne({
       where: {
         bookId,
@@ -162,6 +187,12 @@ export class BooksService {
     });
     if (!book) {
       throw new NotFoundException('Book not found');
+    }
+    //if the user loggedin check if this book is user's favorited book
+    let isFavorite: boolean = false;
+    if (user) {
+      isFavorite = await this.isFavorite(user.userId, bookId);
+      book.isFavorite = isFavorite;
     }
     return book;
   }
@@ -308,5 +339,15 @@ export class BooksService {
       favoriteCount,
     });
     return this.booksRepository.save(decreasedFavorite);
+  }
+
+  async isFavorite(userId: number, bookId: number): Promise<boolean> {
+    const favorite = await this.favoritesRepository.findOne({
+      where: {
+        userId,
+        bookId,
+      },
+    });
+    return !!favorite;
   }
 }

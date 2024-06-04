@@ -1,12 +1,12 @@
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from '../users/entities/user.entity';
+import { BooksService } from '../books/books.service';
+import { Progress } from './entities/chapter-progress.entity';
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { ChaptersService } from '../chapters/chapters.service';
 import { CreateChapterProgressDto } from './dto/create-chapter-progress.dto';
 import { UpdateChapterProgressDto } from './dto/update-chapter-progress.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Progress } from './entities/chapter-progress.entity';
-import { Repository } from 'typeorm';
-import { BooksService } from '../books/books.service';
-import { ChaptersService } from '../chapters/chapters.service';
-import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class ChapterProgressService {

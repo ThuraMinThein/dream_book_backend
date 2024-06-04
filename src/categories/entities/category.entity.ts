@@ -1,12 +1,5 @@
 import { Book } from '../../books/entities/book.entity';
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { InterestedCategory } from '../../interested-categories/entities/interested-category.entity';
 
 @Entity('categories')

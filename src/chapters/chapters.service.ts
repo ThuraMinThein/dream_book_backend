@@ -1,8 +1,3 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Status } from '../utils/enums/status.enum';
@@ -11,6 +6,7 @@ import { User } from '../users/entities/user.entity';
 import { BooksService } from '../books/books.service';
 import { CreateChapterDto } from './dto/create-chapter.dto';
 import { UpdateChapterDto } from './dto/update-chapter.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
 
 @Injectable()
 export class ChaptersService {

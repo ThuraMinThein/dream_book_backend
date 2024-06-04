@@ -1,5 +1,5 @@
-import { ExecutionContext, Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { ExecutionContext, Injectable } from '@nestjs/common';
 
 @Injectable()
 export class JwtOptionalGuard extends AuthGuard('jwt') {
@@ -8,7 +8,6 @@ export class JwtOptionalGuard extends AuthGuard('jwt') {
     user: any,
     info: any,
     context: ExecutionContext,
-    status?: any,
   ): TUser {
     return user;
   }

@@ -11,6 +11,7 @@ import {
   UseFilters,
   Controller,
   BadRequestException,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { Chapter } from './entities/chapter.entity';
 import { ChaptersService } from './chapters.service';
@@ -46,8 +47,8 @@ export class ChaptersController {
   }
 
   @Get('public/:id')
-  async findOne(@Param('id') id: number): Promise<Chapter> {
-    return this.chaptersService.findOne(+id);
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<Chapter> {
+    return this.chaptersService.findOne(id);
   }
 
   //get chapters from author created books
@@ -66,27 +67,27 @@ export class ChaptersController {
   @UseGuards(JwtAuthGuard)
   async findOneByAuthor(
     @Request() req: CustomRequest,
-    @Param('id') chapterId: string,
+    @Param('id', ParseIntPipe) chapterId: number,
   ) {
-    return this.chaptersService.findOneByAuthor(req.user, +chapterId);
+    return this.chaptersService.findOneByAuthor(req.user, chapterId);
   }
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
   async update(
     @Request() req: CustomRequest,
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateChapterDto: UpdateChapterDto,
   ): Promise<Chapter> {
-    return this.chaptersService.update(req.user, +id, updateChapterDto);
+    return this.chaptersService.update(req.user, id, updateChapterDto);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   async remove(
     @Request() req: CustomRequest,
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
   ): Promise<Chapter> {
-    return this.chaptersService.remove(req.user, +id);
+    return this.chaptersService.remove(req.user, id);
   }
 }

@@ -1,24 +1,24 @@
 import {
-  Controller,
   Get,
   Post,
   Body,
   Patch,
   Param,
-  Delete,
-  UseGuards,
-  UseInterceptors,
-  ClassSerializerInterceptor,
-  SerializeOptions,
   Request,
+  UseGuards,
+  Controller,
+  ParseIntPipe,
+  UseInterceptors,
+  SerializeOptions,
+  ClassSerializerInterceptor,
 } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/guard/jwt-auth.gurad';
+import { Progress } from './entities/chapter-progress.entity';
+import { GROUP_USER } from '../utils/serializers/group.serializer';
 import { ChapterProgressService } from './chapter-progress.service';
 import { CreateChapterProgressDto } from './dto/create-chapter-progress.dto';
 import { UpdateChapterProgressDto } from './dto/update-chapter-progress.dto';
-import { JwtAuthGuard } from '../auth/guard/jwt-auth.gurad';
-import { GROUP_USER } from '../utils/serializers/group.serializer';
 import { CustomRequest } from '../common/interfaces/custom-request.interface';
-import { Progress } from './entities/chapter-progress.entity';
 
 @Controller({
   path: 'chapter-progress',
@@ -53,12 +53,12 @@ export class ChapterProgressController {
   @UseGuards(JwtAuthGuard)
   async update(
     @Request() req: CustomRequest,
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateChapterProgressDto: UpdateChapterProgressDto,
   ) {
     return this.chapterProgressService.update(
       req.user,
-      +id,
+      id,
       updateChapterProgressDto,
     );
   }

@@ -1,27 +1,25 @@
 import {
-  Controller,
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
-  UseFilters,
-  UseGuards,
-  UseInterceptors,
   Request,
-  ClassSerializerInterceptor,
-  SerializeOptions,
+  UseGuards,
+  UseFilters,
+  Controller,
   ParseIntPipe,
+  UseInterceptors,
+  SerializeOptions,
+  ClassSerializerInterceptor,
 } from '@nestjs/common';
-import { InterestedCategoriesService } from './interested-categories.service';
-import { CreateInterestedCategoryDto } from './dto/create-interested-category.dto';
-import { UpdateInterestedCategoryDto } from './dto/update-interested-category.dto';
-import { TypeormExceptionFilter } from '../common/filters/exceptionfilters/typeorm-exception.filter';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.gurad';
-import { CustomRequest } from '../common/interfaces/custom-request.interface';
 import { GROUP_USER } from '../utils/serializers/group.serializer';
 import { InterestedCategory } from './entities/interested-category.entity';
+import { InterestedCategoriesService } from './interested-categories.service';
+import { CustomRequest } from '../common/interfaces/custom-request.interface';
+import { CreateInterestedCategoryDto } from './dto/create-interested-category.dto';
+import { TypeormExceptionFilter } from '../common/filters/exceptionfilters/typeorm-exception.filter';
 
 @Controller({
   path: 'interested-categories',

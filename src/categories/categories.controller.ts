@@ -1,5 +1,4 @@
 import {
-  Controller,
   Get,
   Post,
   Body,
@@ -7,8 +6,10 @@ import {
   Param,
   Delete,
   UseFilters,
-  UseInterceptors,
+  Controller,
   UploadedFile,
+  ParseIntPipe,
+  UseInterceptors,
   BadRequestException,
 } from '@nestjs/common';
 import { Category } from './entities/category.entity';
@@ -41,23 +42,20 @@ export class CategoriesController {
     return this.categoriesService.findAll();
   }
 
-  // @Get(':id')
-  // async findOne(@Param('id') id: string): Promise<Category> {
-  //   return this.categoriesService.findOne(+id);
-  // }
-
   @Patch(':id')
   @UseInterceptors(FileInterceptor('icon'))
   async update(
-    @Param('id') categoryId: string,
+    @Param('id', ParseIntPipe) categoryId: number,
     @UploadedFile() icon: Express.Multer.File,
     @Body() updateCategoryDto: UpdateCategoryDto,
   ): Promise<Category> {
-    return this.categoriesService.update(+categoryId, icon, updateCategoryDto);
+    return this.categoriesService.update(categoryId, icon, updateCategoryDto);
   }
 
   @Delete(':id')
-  async remove(@Param('id') categoryId: string): Promise<Category> {
-    return this.categoriesService.remove(+categoryId);
+  async remove(
+    @Param('id', ParseIntPipe) categoryId: number,
+  ): Promise<Category> {
+    return this.categoriesService.remove(categoryId);
   }
 }

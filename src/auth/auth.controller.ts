@@ -1,13 +1,12 @@
 import {
-  Body,
-  ClassSerializerInterceptor,
-  Controller,
   Post,
-  UseGuards,
+  Body,
+  Controller,
   UseInterceptors,
+  ClassSerializerInterceptor,
 } from '@nestjs/common';
-import { AuthService } from './auth.service';
 import { AuthDtos } from './dto/auth.dto';
+import { AuthService } from './auth.service';
 
 @Controller({
   path: 'auth',

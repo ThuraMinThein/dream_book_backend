@@ -2,6 +2,7 @@ import {
   Get,
   Post,
   Body,
+  Delete,
   Request,
   UseGuards,
   UseFilters,
@@ -9,8 +10,6 @@ import {
   UseInterceptors,
   SerializeOptions,
   ClassSerializerInterceptor,
-  Delete,
-  Param,
 } from '@nestjs/common';
 import { Favorite } from './entities/favorite.entity';
 import { FavoritesService } from './favorites.service';

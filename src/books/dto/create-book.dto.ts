@@ -1,4 +1,3 @@
-import { Transform } from 'class-transformer';
 import {
   ArrayMinSize,
   IsArray,
@@ -8,6 +7,7 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { Status } from '../../utils/enums/status.enum';
 
 export class CreateBookDto {
