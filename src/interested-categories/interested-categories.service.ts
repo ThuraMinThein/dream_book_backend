@@ -29,7 +29,7 @@ export class InterestedCategoriesService {
       const category = await this.categoriesService.findOne(categories[i]);
 
       //check for duplicate user category
-      await this.isDuplicateUserCategory(user.userId, categories[i]);
+      await this.isDuplicatedUserCategory(user.userId, categories[i]);
 
       //create interestedCategory
       const interestedCategory = this.interestedCategoriesRepository.create({
@@ -60,7 +60,7 @@ export class InterestedCategoriesService {
     return interestedCategory;
   }
 
-  async isDuplicateUserCategory(userId: number, categoryId: number) {
+  async isDuplicatedUserCategory(userId: number, categoryId: number) {
     const interestedCategory =
       await this.interestedCategoriesRepository.findOne({
         where: {

@@ -65,7 +65,21 @@ export class BooksController {
       page,
       limit,
     };
-    return this.booksService.getRecommendedBookByUser(req.user, options);
+    return this.booksService.getRecommendedBookByUser(options, req.user);
+  }
+
+  @Get('popular')
+  @UseGuards(JwtOptionalGuard)
+  async getPopularBooks(
+    @Request() req: CustomRequest,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(12), ParseIntPipe) limit: number,
+  ): Promise<Pagination<Book>> {
+    const options: IPaginationOptions = {
+      page,
+      limit,
+    };
+    return this.booksService.getPopularBooks(req.user, options);
   }
 
   //get books from all users
@@ -76,7 +90,6 @@ export class BooksController {
   async findAll(
     @Request() req: CustomRequest,
     @Query('search') search: string,
-    @Query('popular', new DefaultValuePipe(false)) popular: boolean,
     @Query('user_id', new ParseNumberPipe('user_id')) userId: number,
     @Query('category_ids', ParseNumberArrayPipe) categoryIds: number[],
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
@@ -92,7 +105,6 @@ export class BooksController {
       search,
       sortBy,
       userId,
-      popular,
       categoryIds,
       req.user,
     );

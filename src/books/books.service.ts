@@ -7,9 +7,9 @@ import {
   paginate,
   Pagination,
   IPaginationOptions,
+  IPaginationMeta,
 } from 'nestjs-typeorm-paginate';
 import slugify from 'slugify';
-import { Repository } from 'typeorm';
 import { Book } from './entities/book.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Status } from '../utils/enums/status.enum';
@@ -17,6 +17,7 @@ import { SortBy } from '../utils/enums/sortBy.enum';
 import { User } from '../users/entities/user.entity';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { Favorite } from '../favorites/entities/favorite.entity';
 import { CategoriesService } from '../categories/categories.service';
 import { CloudinaryService } from '../common/services/cloudinary/cloudinary.service';
@@ -73,18 +74,12 @@ export class BooksService {
     return this.booksRepository.save(newBook);
   }
 
-  //get recommendted books by user interested categories
+  //find recommendted books by user interested categories if user logged in
   async getRecommendedBookByUser(
-    user: User,
     options: IPaginationOptions,
+    user?: User,
   ): Promise<Pagination<Book>> {
-    const qb = this.booksRepository
-      .createQueryBuilder('books')
-      .where('books.status = :status', {
-        status: Status.PUBLISHED,
-      })
-      .leftJoinAndSelect(`books.user`, 'user')
-      .leftJoinAndSelect(`books.category`, 'category');
+    const qb = this.publishedBooksWithUserAndCategory();
 
     const interestedCategories =
       await this.interestedCategoriesService.getInterestedCategoriesByUser(
@@ -100,19 +95,36 @@ export class BooksService {
     } else {
       qb.orderBy('books.created_at', 'DESC');
     }
+
     const paginatedBooks = await paginate<Book>(qb, options);
     if (paginatedBooks.items.length === 0) {
       throw new NotFoundException('No books found');
     }
 
     //jf user logged in check if the book is user's favorited book
-    let isFavorite: boolean = false;
-    if (user) {
-      for (const book of paginatedBooks.items) {
-        isFavorite = await this.isFavorite(user.userId, book.bookId);
-        book.isFavorite = isFavorite;
-      }
+    await this.setFavoriteManyBooks(paginatedBooks, user);
+
+    return paginatedBooks;
+  }
+
+  //find popular books based on users' favorites
+  async getPopularBooks(
+    user: User,
+    options: IPaginationOptions,
+  ): Promise<Pagination<Book>> {
+    const qb = this.publishedBooksWithUserAndCategory().orderBy(
+      'books.favoriteCount',
+      'DESC',
+    );
+
+    const paginatedBooks = await paginate<Book>(qb, options);
+
+    if (paginatedBooks.items.length === 0) {
+      throw new NotFoundException('No books found');
     }
+
+    //jf user logged in check if the book is user's favorited book
+    await this.setFavoriteManyBooks(paginatedBooks, user);
 
     return paginatedBooks;
   }
@@ -123,18 +135,10 @@ export class BooksService {
     search: string,
     sortBy: SortBy,
     userId: number,
-    popular: boolean,
     categoryIds: number[],
     user?: User,
   ): Promise<Pagination<Book>> {
-    const qb = this.booksRepository
-      .createQueryBuilder('books')
-      .where('books.status = :status', {
-        status: Status.PUBLISHED,
-      })
-      .leftJoinAndSelect(`books.user`, 'user')
-      .leftJoinAndSelect(`books.category`, 'category');
-
+    const qb = this.publishedBooksWithUserAndCategory();
     let searchResult = [];
     if (search) {
       searchResult = await qb
@@ -157,23 +161,8 @@ export class BooksService {
       qb.andWhere('user.userId = :userId', { userId });
     }
 
-    if (popular) {
-      qb.orderBy('books.favoriteCount', 'DESC');
-    }
-
-    if (sortBy) {
-      switch (sortBy) {
-        case SortBy.ATOZ:
-          qb.orderBy('books.title', 'ASC');
-          break;
-        case SortBy.ZTOA:
-          qb.orderBy('books.title', 'DESC');
-          break;
-        case SortBy.LATEST:
-          qb.orderBy('books.created_at', 'DESC');
-          break;
-      }
-    }
+    //sort books with
+    this.sortBooks(sortBy, qb);
 
     const paginatedBooks = await paginate<Book>(qb, options);
 
@@ -182,13 +171,8 @@ export class BooksService {
     }
 
     //jf user logged in check if the book is user's favorited book
-    let isFavorite: boolean = false;
-    if (user) {
-      for (const book of paginatedBooks.items) {
-        isFavorite = await this.isFavorite(user.userId, book.bookId);
-        book.isFavorite = isFavorite;
-      }
-    }
+    await this.setFavoriteManyBooks(paginatedBooks, user);
+
     return paginatedBooks;
   }
 
@@ -207,11 +191,8 @@ export class BooksService {
       throw new NotFoundException('Book not found');
     }
     //if the user loggedin check if this book is user's favorited book
-    let isFavorite: boolean = false;
-    if (user) {
-      isFavorite = await this.isFavorite(user.userId, bookId);
-      book.isFavorite = isFavorite;
-    }
+    await this.setFavoriteOneBook(book, user);
+
     return book;
   }
 
@@ -227,25 +208,18 @@ export class BooksService {
       .leftJoinAndSelect(`books.category`, 'category')
       .andWhere('user.userId = :userId', { userId: user.userId });
 
-    if (sortBy) {
-      switch (sortBy) {
-        case SortBy.ATOZ:
-          qb.orderBy('books.title', 'ASC');
-          break;
-        case SortBy.ZTOA:
-          qb.orderBy('books.title', 'DESC');
-          break;
-        case SortBy.LATEST:
-          qb.orderBy('books.created_at', 'DESC');
-          break;
-      }
-    }
+    //sort books
+    this.sortBooks(sortBy, qb);
 
     const paginatedBooks = await paginate<Book>(qb, options);
 
     if (paginatedBooks.items.length === 0) {
       throw new NotFoundException('No books found');
     }
+
+    //check these books are user's favorited books or not
+    await this.setFavoriteManyBooks(paginatedBooks, user);
+
     return paginatedBooks;
   }
 
@@ -265,6 +239,10 @@ export class BooksService {
     if (!book) {
       throw new NotFoundException('Book not found');
     }
+
+    //check if this book is author favorited book or not
+    await this.setFavoriteOneBook(book, user);
+
     return book;
   }
 
@@ -364,6 +342,16 @@ export class BooksService {
     return book;
   }
 
+  publishedBooksWithUserAndCategory(): SelectQueryBuilder<Book> {
+    return this.booksRepository
+      .createQueryBuilder('books')
+      .where('books.status = :status', {
+        status: Status.PUBLISHED,
+      })
+      .leftJoinAndSelect(`books.user`, 'user')
+      .leftJoinAndSelect(`books.category`, 'category');
+  }
+
   async getAllSoftDeletedBooks(user: User): Promise<Book[]> {
     const deletedBooks = await this.booksRepository
       .createQueryBuilder('books')
@@ -394,6 +382,23 @@ export class BooksService {
     if (!deletedBook)
       throw new NotFoundException('No book is deleted with this id');
     return deletedBook;
+  }
+
+  async sortBooks(sortBy: SortBy, qb: SelectQueryBuilder<Book>) {
+    switch (sortBy) {
+      case SortBy.ATOZ:
+        qb.orderBy('books.title', 'ASC');
+        break;
+      case SortBy.ZTOA:
+        qb.orderBy('books.title', 'DESC');
+        break;
+      case SortBy.LATEST:
+        qb.orderBy('books.created_at', 'DESC');
+        break;
+      case SortBy.OLDEST:
+        qb.orderBy('books.created_at', 'ASC');
+        break;
+    }
   }
 
   async increaseFavorite(bookId: number) {
@@ -427,5 +432,26 @@ export class BooksService {
       },
     });
     return !!favorite;
+  }
+
+  async setFavoriteManyBooks(
+    paginatedBooks: Pagination<Book, IPaginationMeta>,
+    user?: User,
+  ) {
+    let isFavorite: boolean = false;
+    if (user) {
+      for (const book of paginatedBooks.items) {
+        isFavorite = await this.isFavorite(user.userId, book.bookId);
+        book.isFavorite = isFavorite;
+      }
+    }
+  }
+
+  async setFavoriteOneBook(book: Book, user?: User) {
+    let isFavorite: boolean = false;
+    if (user) {
+      isFavorite = await this.isFavorite(user.userId, book.bookId);
+      book.isFavorite = isFavorite;
+    }
   }
 }
