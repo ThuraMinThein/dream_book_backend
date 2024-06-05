@@ -19,6 +19,7 @@ import {
 } from '@nestjs/common';
 import { Book } from './entities/book.entity';
 import { BooksService } from './books.service';
+import { SortBy } from '../utils/enums/sortBy.enum';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -30,7 +31,6 @@ import { IPaginationOptions, Pagination } from 'nestjs-typeorm-paginate';
 import { CustomRequest } from '../common/interfaces/custom-request.interface';
 import { ParseNumberArrayPipe } from '../common/pipes/parseNumberArrayPipe.pipe';
 import { TypeormExceptionFilter } from '../common/filters/exceptionfilters/typeorm-exception.filter';
-import { SortBy } from '../utils/enums/sortBy.enum';
 
 @Controller({
   path: 'books',
@@ -138,6 +138,14 @@ export class BooksController {
     return this.booksService.findOneByAuthor(req.user, bookId);
   }
 
+  @Get('deleted')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
+  @SerializeOptions({ groups: [GROUP_USER] })
+  async getAllDeletedBooks(@Request() req: CustomRequest): Promise<Book[]> {
+    return this.booksService.getAllSoftDeletedBooks(req.user);
+  }
+
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
@@ -157,7 +165,29 @@ export class BooksController {
     );
   }
 
-  @Delete(':id')
+  @Patch('restore/:id')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
+  @SerializeOptions({ groups: [GROUP_USER] })
+  async restore(
+    @Request() req: CustomRequest,
+    @Param('id', ParseIntPipe) bookId: number,
+  ): Promise<Book> {
+    return this.booksService.restore(req.user, bookId);
+  }
+
+  @Delete('soft/:id')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
+  @SerializeOptions({ groups: [GROUP_USER] })
+  async softDelete(
+    @Request() req: CustomRequest,
+    @Param('id', ParseIntPipe) bookId: number,
+  ): Promise<Book> {
+    return this.booksService.softDelete(req.user, bookId);
+  }
+
+  @Delete('hard/:id')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({ groups: [GROUP_USER] })

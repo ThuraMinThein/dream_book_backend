@@ -13,6 +13,7 @@ import { Repository } from 'typeorm';
 import { Book } from './entities/book.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Status } from '../utils/enums/status.enum';
+import { SortBy } from '../utils/enums/sortBy.enum';
 import { User } from '../users/entities/user.entity';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
@@ -20,7 +21,6 @@ import { Favorite } from '../favorites/entities/favorite.entity';
 import { CategoriesService } from '../categories/categories.service';
 import { CloudinaryService } from '../common/services/cloudinary/cloudinary.service';
 import { InterestedCategoriesService } from '../interested-categories/interested-categories.service';
-import { SortBy } from '../utils/enums/sortBy.enum';
 
 @Injectable()
 export class BooksService {
@@ -320,8 +320,21 @@ export class BooksService {
     return this.booksRepository.save(updatedBook);
   }
 
-  async remove(user: User, bookId: number): Promise<Book> {
+  async softDelete(user: User, bookId: number): Promise<Book> {
     const book = await this.findOneByAuthor(user, bookId);
+
+    await this.booksRepository.softDelete(bookId);
+    return book;
+  }
+
+  async restore(user: User, bookId: number): Promise<Book> {
+    const deletedBook = await this.getOneSoftDeletedBook(user, bookId);
+    await this.booksRepository.restore(bookId);
+    return deletedBook;
+  }
+
+  async remove(user: User, bookId: number): Promise<Book> {
+    const book = await this.getOneSoftDeletedBook(user, bookId);
     //delete image in cloudinary if there is an image
     book.coverImage &&
       (await this.cloudinaryService.deleteImage(book.coverImage));
@@ -349,6 +362,38 @@ export class BooksService {
       },
     });
     return book;
+  }
+
+  async getAllSoftDeletedBooks(user: User): Promise<Book[]> {
+    const deletedBooks = await this.booksRepository
+      .createQueryBuilder('books')
+      .withDeleted()
+      .leftJoinAndSelect(`books.user`, 'user')
+      .leftJoinAndSelect(`books.category`, 'category')
+      .where('user.userId =:userId', { userId: user.userId })
+      .andWhere('books.deleted_at IS NOT NULL ')
+      .getMany();
+
+    if (deletedBooks.length === 0)
+      throw new NotFoundException("You haven't deleted any books");
+
+    return deletedBooks;
+  }
+
+  async getOneSoftDeletedBook(user: User, bookId: number): Promise<Book> {
+    const deletedBook = await this.booksRepository
+      .createQueryBuilder('books')
+      .withDeleted()
+      .leftJoinAndSelect(`books.user`, 'user')
+      .leftJoinAndSelect(`books.category`, 'category')
+      .where('user.userId =:userId', { userId: user.userId })
+      .andWhere('books.bookId =:bookId', { bookId })
+      .andWhere('books.deleted_at IS NOT NULL ')
+      .getOne();
+
+    if (!deletedBook)
+      throw new NotFoundException('No book is deleted with this id');
+    return deletedBook;
   }
 
   async increaseFavorite(bookId: number) {
