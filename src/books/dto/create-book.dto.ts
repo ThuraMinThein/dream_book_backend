@@ -29,6 +29,7 @@ export class CreateBookDto {
   keywords: string[];
 
   @IsEnum(Status)
+  @IsOptional()
   status: Status;
 
   @IsNotEmpty()

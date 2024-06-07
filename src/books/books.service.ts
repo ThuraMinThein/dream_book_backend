@@ -140,18 +140,30 @@ export class BooksService {
   ): Promise<Pagination<Book>> {
     const qb = this.publishedBooksWithUserAndCategory();
 
-    //search with title or keywords or description
+    //search with title keywords and descrpition
     if (search) {
-      qb.andWhere('books.title ILIKE :search', {
-        search: `%${search}%`,
-      })
-        .orWhere(
-          'EXISTS (SELECT 1 FROM unnest(books.keywords) keyword WHERE keyword ILIKE :search)',
-          { search: `%${search}%` },
-        )
-        .andWhere('books.status = :status', { status: Status.PUBLISHED })
-        .orWhere('books.description ILIKE :search', { search: `%${search}%` })
-        .andWhere('books.status = :status', { status: Status.PUBLISHED });
+      // search with book title first
+      let searchResult: Book[] = await qb
+        .andWhere('books.title ILIKE :search', {
+          search: `%${search}%`,
+        })
+        .getMany();
+      // if there is nothing match with book title, search with keywords
+      if (searchResult.length === 0) {
+        searchResult = await qb
+          .where(
+            'EXISTS (SELECT 1 FROM unnest(books.keywords) keyword WHERE keyword ILIKE :search)',
+            { search: `%${search}%` },
+          )
+          .andWhere('books.status =:status', { status: Status.PUBLISHED })
+          .getMany();
+      }
+      // if nothing match with keywords, then search with description
+      if (searchResult.length === 0) {
+        qb.where('books.description ILIKE :search', {
+          search: `%${search}%`,
+        }).andWhere('books.status =:status', { status: Status.PUBLISHED });
+      }
     }
 
     if (categoryIds.length > 0) {

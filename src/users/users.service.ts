@@ -2,7 +2,11 @@ import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { Injectable, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { CloudinaryService } from '../common/services/cloudinary/cloudinary.service';
 
 @Injectable()
@@ -40,8 +44,21 @@ export class UsersService {
     //phone number
     let phoneNumber: string = user.phoneNumber;
     const { countryCode, localNumber } = updateUserDto;
-    if (countryCode && localNumber) {
+    if (countryCode || localNumber) {
+      if (!countryCode)
+        throw new BadRequestException('Country code is requied!');
+      if (!localNumber)
+        throw new BadRequestException('local number is required!');
       phoneNumber = `${countryCode}${localNumber}`;
+
+      //check if phone number is duplicated
+      const userWithPhone = await this.usersRepository.find({
+        where: {
+          phoneNumber,
+        },
+      });
+      if (userWithPhone.length > 0)
+        throw new ConflictException('Invalid Phone Number!');
     }
 
     //if the user wants to change the image, replace image in cloudinary with new and old image
