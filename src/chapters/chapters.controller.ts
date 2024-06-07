@@ -10,8 +10,8 @@ import {
   UseGuards,
   UseFilters,
   Controller,
-  BadRequestException,
   ParseIntPipe,
+  BadRequestException,
 } from '@nestjs/common';
 import { Chapter } from './entities/chapter.entity';
 import { ChaptersService } from './chapters.service';

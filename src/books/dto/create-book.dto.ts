@@ -1,11 +1,11 @@
 import {
-  ArrayMinSize,
   IsArray,
   IsEnum,
-  IsNotEmpty,
   IsNumber,
-  IsOptional,
   IsString,
+  IsOptional,
+  IsNotEmpty,
+  ArrayMinSize,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { Status } from '../../utils/enums/status.enum';

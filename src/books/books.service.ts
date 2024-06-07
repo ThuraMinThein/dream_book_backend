@@ -6,8 +6,8 @@ import {
 import {
   paginate,
   Pagination,
-  IPaginationOptions,
   IPaginationMeta,
+  IPaginationOptions,
 } from 'nestjs-typeorm-paginate';
 import slugify from 'slugify';
 import { Book } from './entities/book.entity';
@@ -139,18 +139,19 @@ export class BooksService {
     user?: User,
   ): Promise<Pagination<Book>> {
     const qb = this.publishedBooksWithUserAndCategory();
-    let searchResult = [];
+
+    //search with title or keywords or description
     if (search) {
-      searchResult = await qb
-        .andWhere('books.title ILIKE :search', { search: `%${search}%` })
-        .getMany();
-    }
-    if (searchResult.length === 0 && search) {
-      qb.where('books.description ILIKE :search', {
+      qb.andWhere('books.title ILIKE :search', {
         search: `%${search}%`,
-      }).andWhere('books.status = :status', {
-        status: Status.PUBLISHED,
-      });
+      })
+        .orWhere(
+          'EXISTS (SELECT 1 FROM unnest(books.keywords) keyword WHERE keyword ILIKE :search)',
+          { search: `%${search}%` },
+        )
+        .andWhere('books.status = :status', { status: Status.PUBLISHED })
+        .orWhere('books.description ILIKE :search', { search: `%${search}%` })
+        .andWhere('books.status = :status', { status: Status.PUBLISHED });
     }
 
     if (categoryIds.length > 0) {

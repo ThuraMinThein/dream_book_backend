@@ -1,9 +1,9 @@
 import {
   IsEnum,
-  IsNotEmpty,
   IsNumber,
-  IsOptional,
   IsString,
+  IsOptional,
+  IsNotEmpty,
 } from 'class-validator';
 import { Status } from '../../utils/enums/status.enum';
 
