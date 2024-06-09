@@ -16,6 +16,7 @@ import {
   DefaultValuePipe,
   SerializeOptions,
   ClassSerializerInterceptor,
+  BadRequestException,
 } from '@nestjs/common';
 import { Book } from './entities/book.entity';
 import { BooksService } from './books.service';
@@ -50,6 +51,7 @@ export class BooksController {
     @UploadedFile() coverImage: Express.Multer.File,
     @Body() createBookDto: CreateBookDto,
   ): Promise<Book> {
+    if (!coverImage) throw new BadRequestException('Cover Image is required');
     return this.booksService.create(req.user, coverImage, createBookDto);
   }
 

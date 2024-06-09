@@ -30,6 +30,7 @@ export class Book {
 
   @Column({
     name: 'cover_image',
+    default: null,
     type: 'varchar',
     length: 255,
   })
