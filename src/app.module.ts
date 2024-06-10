@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { AppService } from './app.service';
 import config from './typeorm/typeorm.config';
 import { ConfigModule } from '@nestjs/config';
@@ -11,6 +12,7 @@ import { ChaptersModule } from './chapters/chapters.module';
 import { CommentsModule } from './comments/comments.module';
 import { FavoritesModule } from './favorites/favorites.module';
 import { CategoriesModule } from './categories/categories.module';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { ChapterProgressModule } from './chapter-progress/chapter-progress.module';
 import { InterestedCategoriesModule } from './interested-categories/interested-categories.module';
 
@@ -19,6 +21,12 @@ import { InterestedCategoriesModule } from './interested-categories/interested-c
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 10000,
+        limit: 5,
+      },
+    ]),
     TypeOrmModule.forRoot(config),
     AuthModule,
     UsersModule,
@@ -31,6 +39,12 @@ import { InterestedCategoriesModule } from './interested-categories/interested-c
     InterestedCategoriesModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}
