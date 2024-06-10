@@ -92,8 +92,8 @@ export class BooksController {
   async findAll(
     @Request() req: CustomRequest,
     @Query('search') search: string,
-    @Query('user_id', new ParseNumberPipe('user_id')) userId: number,
-    @Query('category_ids', ParseNumberArrayPipe) categoryIds: number[],
+    @Query('user_id', new ParseNumberPipe('user_id')) userId: any,
+    @Query('category_ids', ParseNumberArrayPipe) categoryIds: any[],
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(12), ParseIntPipe) limit: number,
     @Query('sortBy', new DefaultValuePipe(SortBy.DEFAULT)) sortBy: SortBy,
@@ -163,7 +163,7 @@ export class BooksController {
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
-  @UseInterceptors(FileInterceptor('bookImage'))
+  @UseInterceptors(FileInterceptor('coverImage'))
   @SerializeOptions({ groups: [GROUP_USER] })
   async update(
     @Request() req: CustomRequest,

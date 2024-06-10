@@ -42,8 +42,9 @@ export class UsersService {
     updateUserDto: UpdateUserDto,
   ): Promise<User> {
     //phone number
-    let phoneNumber: string = user.phoneNumber;
     const { countryCode, localNumber } = updateUserDto;
+
+    let phoneNumber: string = user.phoneNumber;
     if (countryCode || localNumber) {
       if (!countryCode)
         throw new BadRequestException('Country code is requied!');
@@ -52,13 +53,7 @@ export class UsersService {
       phoneNumber = `${countryCode}${localNumber}`;
 
       //check if phone number is duplicated
-      const userWithPhone = await this.usersRepository.find({
-        where: {
-          phoneNumber,
-        },
-      });
-      if (userWithPhone.length > 0)
-        throw new ConflictException('Invalid Phone Number!');
+      await this.checkConflictPhoneNumber(phoneNumber);
     }
 
     //if the user wants to change the image, replace image in cloudinary with new and old image
@@ -106,11 +101,20 @@ export class UsersService {
     if (user) throw new ConflictException('Email already exists');
   }
 
-  async findUserWithEmail(email: string) {
+  async findUserWithEmail(email: string): Promise<User> {
     return this.usersRepository.findOne({
       where: {
         email,
       },
     });
+  }
+
+  async checkConflictPhoneNumber(phoneNumber: string) {
+    const user = await this.usersRepository.findOne({
+      where: {
+        phoneNumber,
+      },
+    });
+    if (user) throw new ConflictException('Invalid phone number');
   }
 }

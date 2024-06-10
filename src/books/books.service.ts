@@ -174,7 +174,7 @@ export class BooksService {
       qb.andWhere('user.userId = :userId', { userId });
     }
 
-    //sort books with
+    //sort books
     this.sortBooks(sortBy, qb);
 
     const paginatedBooks = await paginate<Book>(qb, options);
@@ -278,6 +278,14 @@ export class BooksService {
       if (hasSlug) throw new ConflictException('Duplicate book title');
     }
 
+    //if user wants to change the category, find the category and update the book
+    let category = book.category;
+    if (updateBookDto?.categoryId) {
+      category = await this.categoriesService.findOne(
+        updateBookDto?.categoryId,
+      );
+    }
+
     //if the user wants to change the image, replace image in cloudinary with new and old image
     let bookImage = book.coverImage;
     if (newCoverImage) {
@@ -290,14 +298,6 @@ export class BooksService {
       //delete old image in cloudinary if there is an image exists
       book?.coverImage &&
         (await this.cloudinaryService.deleteImage(book.coverImage));
-    }
-
-    //if user wants to change the category, find the category and update the book
-    let category = book.category;
-    if (updateBookDto?.categoryId) {
-      category = await this.categoriesService.findOne(
-        updateBookDto?.categoryId,
-      );
     }
 
     //update book

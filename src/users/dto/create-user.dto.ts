@@ -7,6 +7,7 @@ import {
   MinLength,
   IsNotEmpty,
   IsOptional,
+  IsPhoneNumber,
 } from 'class-validator';
 import { Gender } from '../../utils/enums/gender.enum';
 
