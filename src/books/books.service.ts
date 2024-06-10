@@ -45,8 +45,7 @@ export class BooksService {
     const slug = this.createSlug(createBookDto.title, user.userId);
 
     //check if user already has a book with same title
-    const hasSlug = await this.hasSlug(slug);
-    if (hasSlug) throw new ConflictException('Duplicate book title');
+    const hasSlug = await this.checkDuplicateSlug(slug);
 
     //find user entered category exists or not
     const category = await this.categoriesService.findOne(
@@ -274,8 +273,7 @@ export class BooksService {
       slug = this.createSlug(updateBookDto.title, user.userId);
 
       //check if user already has a book with same title
-      const hasSlug = await this.hasSlug(slug);
-      if (hasSlug) throw new ConflictException('Duplicate book title');
+      const checkDuplicateSlug = await this.checkDuplicateSlug(slug, book.slug);
     }
 
     //if user wants to change the category, find the category and update the book
@@ -346,12 +344,18 @@ export class BooksService {
     return slug + '-' + userId;
   }
 
-  async hasSlug(slug: string): Promise<Book> {
+  async checkDuplicateSlug(slug: string, oldSlug?: string): Promise<Book> {
     const book = await this.booksRepository.findOne({
       where: {
         slug,
       },
     });
+    if (book) {
+      if (!oldSlug || oldSlug !== slug) {
+        throw new ConflictException('Duplicate book title');
+      }
+    }
+
     return book;
   }
 

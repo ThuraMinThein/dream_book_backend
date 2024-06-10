@@ -53,7 +53,7 @@ export class UsersService {
       phoneNumber = `${countryCode}${localNumber}`;
 
       //check if phone number is duplicated
-      await this.checkConflictPhoneNumber(phoneNumber);
+      await this.checkConflictPhoneNumber(phoneNumber, user.phoneNumber);
     }
 
     //if the user wants to change the image, replace image in cloudinary with new and old image
@@ -109,12 +109,13 @@ export class UsersService {
     });
   }
 
-  async checkConflictPhoneNumber(phoneNumber: string) {
+  async checkConflictPhoneNumber(phoneNumber: string, oldPhoneNumber: string) {
     const user = await this.usersRepository.findOne({
       where: {
         phoneNumber,
       },
     });
-    if (user) throw new ConflictException('Invalid phone number');
+    if (user && phoneNumber !== oldPhoneNumber)
+      throw new ConflictException('Invalid phone number');
   }
 }
