@@ -1,17 +1,13 @@
 import {
   IsEnum,
-  IsEmail,
-  Matches,
+  IsEmpty,
   IsString,
-  MaxLength,
   MinLength,
   IsNotEmpty,
   IsOptional,
   IsPhoneNumber,
-  IsIn,
 } from 'class-validator';
 import { Gender } from '../../utils/enums/gender.enum';
-import { CountryCodeArray } from '../../utils/constants/countryCode';
 
 export class CreateUserDto {
   @IsString()
@@ -23,9 +19,7 @@ export class CreateUserDto {
   @IsOptional()
   profilePicture: string;
 
-  @IsNotEmpty()
-  @IsString()
-  @IsEmail()
+  @IsEmpty({ message: 'Email is not allowed to change' })
   email: string;
 
   @IsNotEmpty()

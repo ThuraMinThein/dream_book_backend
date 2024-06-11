@@ -44,19 +44,20 @@ export class UsersService {
     updateUserDto: UpdateUserDto,
   ): Promise<User> {
     //new datas
-    let { oldPassword, email } = updateUserDto;
+    let { oldPassword } = updateUserDto;
 
     //datas from database
     let { password, countryCode, phoneNumber, localNumber, profilePicture } =
       user;
 
-    //not allow to change email
-    if (email) throw new BadRequestException('Email is not allowed to change');
-
     //phone number
 
     let newPhoneNumber = updateUserDto.phoneNumber;
     if (newPhoneNumber) {
+      //check if the new phone number is duplicated
+      await this.checkConflictPhoneNumber(newPhoneNumber, user.phoneNumber);
+
+      //separate country code and local number;
       CountryCodeArray.forEach((code: string) => {
         if (newPhoneNumber.startsWith(code)) {
           localNumber = newPhoneNumber.replace(code, '');
@@ -64,8 +65,6 @@ export class UsersService {
           return;
         }
       });
-      //check if the new phone number is duplicated
-      await this.checkConflictPhoneNumber(newPhoneNumber, user.phoneNumber);
 
       phoneNumber = newPhoneNumber;
     }
