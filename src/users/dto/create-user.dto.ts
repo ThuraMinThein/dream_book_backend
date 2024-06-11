@@ -8,8 +8,10 @@ import {
   IsNotEmpty,
   IsOptional,
   IsPhoneNumber,
+  IsIn,
 } from 'class-validator';
 import { Gender } from '../../utils/enums/gender.enum';
+import { CountryCodeArray } from '../../utils/constants/countryCode';
 
 export class CreateUserDto {
   @IsString()
@@ -32,16 +34,8 @@ export class CreateUserDto {
   password: string;
 
   @IsString()
-  @IsOptional()
-  @Matches(/^\+\d{1,3}$/, { message: 'Invalid country code' })
-  countryCode: string;
-
-  @IsString()
-  @IsOptional()
-  @MaxLength(15, { message: 'Invalid number' })
-  @MinLength(7, { message: 'Invalid number' })
-  @Matches(/^\d+$/, { message: 'Invalid number' })
-  localNumber: string;
+  @IsPhoneNumber()
+  phoneNumber: string;
 
   @IsOptional()
   bio: string;

@@ -8,6 +8,7 @@ import {
   ConflictException,
   BadRequestException,
 } from '@nestjs/common';
+import { CountryCodeArray } from '../utils/constants/countryCode';
 import { CloudinaryService } from '../common/services/cloudinary/cloudinary.service';
 
 @Injectable()
@@ -43,21 +44,30 @@ export class UsersService {
     updateUserDto: UpdateUserDto,
   ): Promise<User> {
     //new datas
-    const { countryCode, localNumber, oldPassword } = updateUserDto;
+    let { oldPassword, email } = updateUserDto;
 
     //datas from database
-    let { phoneNumber, profilePicture, password } = user;
+    let { password, countryCode, phoneNumber, localNumber, profilePicture } =
+      user;
+
+    //not allow to change email
+    if (email) throw new BadRequestException('Email is not allowed to change');
 
     //phone number
-    if (countryCode || localNumber) {
-      if (!countryCode)
-        throw new BadRequestException('Country code is requied!');
-      if (!localNumber)
-        throw new BadRequestException('local number is required!');
-      phoneNumber = `${countryCode}${localNumber}`;
 
-      //check if phone number is duplicated
-      await this.checkConflictPhoneNumber(phoneNumber, user.phoneNumber);
+    let newPhoneNumber = updateUserDto.phoneNumber;
+    if (newPhoneNumber) {
+      CountryCodeArray.forEach((code: string) => {
+        if (newPhoneNumber.startsWith(code)) {
+          localNumber = newPhoneNumber.replace(code, '');
+          countryCode = code;
+          return;
+        }
+      });
+      //check if the new phone number is duplicated
+      await this.checkConflictPhoneNumber(newPhoneNumber, user.phoneNumber);
+
+      phoneNumber = newPhoneNumber;
     }
 
     //if user wants to change the password, check if the old password and new password are the smae
@@ -90,6 +100,8 @@ export class UsersService {
     const updatedUser = this.usersRepository.create({
       ...user,
       ...updateUserDto,
+      countryCode,
+      localNumber,
       password,
       phoneNumber,
       profilePicture,
