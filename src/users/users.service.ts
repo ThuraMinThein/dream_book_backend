@@ -1,3 +1,4 @@
+import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -41,10 +42,13 @@ export class UsersService {
     newProfilePicture: Express.Multer.File,
     updateUserDto: UpdateUserDto,
   ): Promise<User> {
-    //phone number
-    const { countryCode, localNumber } = updateUserDto;
+    //new datas
+    const { countryCode, localNumber, oldPassword } = updateUserDto;
 
-    let phoneNumber: string = user.phoneNumber;
+    //datas from database
+    let { phoneNumber, profilePicture, password } = user;
+
+    //phone number
     if (countryCode || localNumber) {
       if (!countryCode)
         throw new BadRequestException('Country code is requied!');
@@ -56,8 +60,20 @@ export class UsersService {
       await this.checkConflictPhoneNumber(phoneNumber, user.phoneNumber);
     }
 
+    //if user wants to change the password, check if the old password and new password are the smae
+    let newPassword: string = updateUserDto.password;
+    if (newPassword) {
+      if (!oldPassword)
+        throw new BadRequestException('Old password is reuqired');
+      const isCorrect = await bcrypt.compare(oldPassword, password);
+      if (isCorrect) {
+        password = await this.hashPassword(newPassword);
+      } else {
+        throw new BadRequestException('Incorrect Password');
+      }
+    }
+
     //if the user wants to change the image, replace image in cloudinary with new and old image
-    let profilePicture = user.profilePicture;
     if (newProfilePicture) {
       const { url } = await this.cloudinaryService.storeImage(
         newProfilePicture,
@@ -74,6 +90,7 @@ export class UsersService {
     const updatedUser = this.usersRepository.create({
       ...user,
       ...updateUserDto,
+      password,
       phoneNumber,
       profilePicture,
     });
@@ -92,13 +109,18 @@ export class UsersService {
 
   //functions
 
-  async hasEmail(email: string) {
+  async hashPassword(password: string) {
+    const salt = await bcrypt.genSalt();
+    return bcrypt.hash(password, salt);
+  }
+
+  async hasEmail(email: string): Promise<User> {
     const user = await this.usersRepository.findOne({
       where: {
         email,
       },
     });
-    if (user) throw new ConflictException('Email already exists');
+    return user;
   }
 
   async findUserWithEmail(email: string): Promise<User> {

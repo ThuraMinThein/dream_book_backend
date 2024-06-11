@@ -273,7 +273,7 @@ export class BooksService {
       slug = this.createSlug(updateBookDto.title, user.userId);
 
       //check if user already has a book with same title
-      const checkDuplicateSlug = await this.checkDuplicateSlug(slug, book.slug);
+      await this.checkDuplicateSlug(slug, book.slug);
     }
 
     //if user wants to change the category, find the category and update the book

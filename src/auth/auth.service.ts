@@ -25,10 +25,11 @@ export class AuthService {
     const { email, password } = authDto;
 
     //check if email exist
-    await this.usersService.hasEmail(email);
+    const userWithEmail = await this.usersService.hasEmail(email);
+    if (userWithEmail) throw new UnauthorizedException('Credential Error');
 
     //hash password
-    const hashedPassword = await this.hashPassword(password);
+    const hashedPassword = await this.usersService.hashPassword(password);
 
     const newUser = this.usersRepository.create({
       ...authDto,
@@ -66,10 +67,6 @@ export class AuthService {
   }
 
   //functions
-  async hashPassword(password: string) {
-    const salt = await bcrypt.genSalt();
-    return bcrypt.hash(password, salt);
-  }
 
   async createAccessToken(userId: number, email: string) {
     const payload = {
