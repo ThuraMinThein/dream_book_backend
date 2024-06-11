@@ -289,7 +289,7 @@ export class BooksService {
     if (newCoverImage) {
       const { url } = await this.cloudinaryService.storeImage(
         newCoverImage,
-        'book-cover-images',
+        'book-images',
       );
       bookImage = url;
 
