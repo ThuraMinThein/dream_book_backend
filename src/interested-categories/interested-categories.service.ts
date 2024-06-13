@@ -1,11 +1,7 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../users/entities/user.entity';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CategoriesService } from '../categories/categories.service';
 import { InterestedCategory } from './entities/interested-category.entity';
 import { CreateInterestedCategoryDto } from './dto/create-interested-category.dto';
@@ -29,7 +25,11 @@ export class InterestedCategoriesService {
       const category = await this.categoriesService.findOne(categories[i]);
 
       //check for duplicate user category
-      await this.isDuplicatedUserCategory(user.userId, categories[i]);
+      const hasCategory = await this.isDuplicatedUserCategory(
+        user.userId,
+        categories[i],
+      );
+      if (hasCategory) continue;
 
       //create interestedCategory
       const interestedCategory = this.interestedCategoriesRepository.create({
@@ -68,8 +68,7 @@ export class InterestedCategoriesService {
           categoryId,
         },
       });
-    if (interestedCategory)
-      throw new ConflictException('Duplicate user category');
+    return interestedCategory;
   }
 
   async findOneWithUserId(

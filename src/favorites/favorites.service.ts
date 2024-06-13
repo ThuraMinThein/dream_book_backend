@@ -46,11 +46,14 @@ export class FavoritesService {
       },
       relations: {
         user: true,
-        book: true,
+        book: {
+          user: true,
+          category: true,
+        },
       },
     });
     if (favorites.length === 0)
-      throw new NotFoundException("This user doesn't have any favorite book");
+      throw new NotFoundException("You don't have any favorite books yet");
     return favorites;
   }
 
@@ -71,7 +74,7 @@ export class FavoritesService {
   async delete(user: User, bookId: number): Promise<any> {
     const { userId } = user;
     const favorite = await this.findOneWithUserIdAndBookId(userId, bookId);
-    if (!favorite) throw new NotFoundException('favorite not found to delete');
+    if (!favorite) throw new NotFoundException('not found to delete');
     //minus one favorite in book
     await this.booksService.decreaseFavorite(bookId);
     await this.favoritesRepository.delete({

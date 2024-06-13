@@ -15,8 +15,8 @@ import {
   UseInterceptors,
   DefaultValuePipe,
   SerializeOptions,
-  ClassSerializerInterceptor,
   BadRequestException,
+  ClassSerializerInterceptor,
 } from '@nestjs/common';
 import { Book } from './entities/book.entity';
 import { BooksService } from './books.service';
