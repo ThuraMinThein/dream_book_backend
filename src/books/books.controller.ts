@@ -118,7 +118,7 @@ export class BooksController {
   @SerializeOptions({ groups: [GROUP_USER] })
   async findOne(
     @Request() req: CustomRequest,
-    @Param('id', ParseIntPipe) bookId: number,
+    @Param('id', ParseIntPipe) bookId: any,
   ): Promise<Book> {
     return this.booksService.findOne(bookId, req.user);
   }
@@ -147,7 +147,7 @@ export class BooksController {
   @SerializeOptions({ groups: [GROUP_USER] })
   async findOneByAuthor(
     @Request() req: CustomRequest,
-    @Param('id', ParseIntPipe) bookId: number,
+    @Param('id', ParseIntPipe) bookId: any,
   ): Promise<Book> {
     return this.booksService.findOneByAuthor(req.user, bookId);
   }
@@ -167,7 +167,7 @@ export class BooksController {
   @SerializeOptions({ groups: [GROUP_USER] })
   async update(
     @Request() req: CustomRequest,
-    @Param('id', ParseIntPipe) bookId: number,
+    @Param('id', ParseIntPipe) bookId: any,
     @UploadedFile() coverImage: Express.Multer.File,
     @Body() updateBookDto: UpdateBookDto,
   ): Promise<Book> {
@@ -185,7 +185,7 @@ export class BooksController {
   @SerializeOptions({ groups: [GROUP_USER] })
   async restore(
     @Request() req: CustomRequest,
-    @Param('id', ParseIntPipe) bookId: number,
+    @Param('id', ParseIntPipe) bookId: any,
   ): Promise<Book> {
     return this.booksService.restore(req.user, bookId);
   }
@@ -196,7 +196,7 @@ export class BooksController {
   @SerializeOptions({ groups: [GROUP_USER] })
   async softDelete(
     @Request() req: CustomRequest,
-    @Param('id', ParseIntPipe) bookId: number,
+    @Param('id', ParseIntPipe) bookId: any,
   ): Promise<Book> {
     return this.booksService.softDelete(req.user, bookId);
   }
@@ -207,7 +207,7 @@ export class BooksController {
   @SerializeOptions({ groups: [GROUP_USER] })
   async remove(
     @Request() req: CustomRequest,
-    @Param('id', ParseIntPipe) bookId: number,
+    @Param('id', ParseIntPipe) bookId: any,
   ): Promise<Book> {
     return this.booksService.remove(req.user, bookId);
   }

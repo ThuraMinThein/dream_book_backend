@@ -53,7 +53,7 @@ export class ChapterProgressController {
   @UseGuards(JwtAuthGuard)
   async update(
     @Request() req: CustomRequest,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseIntPipe) id: any,
     @Body() updateChapterProgressDto: UpdateChapterProgressDto,
   ) {
     return this.chapterProgressService.update(

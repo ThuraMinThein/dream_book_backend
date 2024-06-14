@@ -40,7 +40,7 @@ export class CommentsController {
 
   @Get()
   async findAll(
-    @Query('book_id', ParseIntPipe) bookId: number,
+    @Query('book_id', ParseIntPipe) bookId: any,
   ): Promise<Comment[]> {
     if (!bookId)
       throw new BadRequestException('You must add book id as query param');
@@ -51,7 +51,7 @@ export class CommentsController {
   @UseGuards(JwtAuthGuard)
   async update(
     @Request() req: CustomRequest,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseIntPipe) id: any,
     @Body() updateCommentDto: UpdateCommentDto,
   ): Promise<Comment> {
     return this.commentsService.update(req.user, id, updateCommentDto);
@@ -61,7 +61,7 @@ export class CommentsController {
   @UseGuards(JwtAuthGuard)
   async remove(
     @Request() req: CustomRequest,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseIntPipe) id: any,
   ): Promise<Comment> {
     return this.commentsService.remove(req.user, id);
   }

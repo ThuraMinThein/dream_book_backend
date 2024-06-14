@@ -40,14 +40,16 @@ export class ChaptersController {
 
   //get chapters from all users created books
   @Get('public')
-  async findAll(@Query('book_id') bookId: number): Promise<Chapter[]> {
+  async findAll(
+    @Query('book_id', ParseIntPipe) bookId: any,
+  ): Promise<Chapter[]> {
     if (!bookId)
       throw new BadRequestException('You must add book id as query param');
     return this.chaptersService.findAll(bookId);
   }
 
   @Get('public/:id')
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<Chapter> {
+  async findOne(@Param('id', ParseIntPipe) id: any): Promise<Chapter> {
     return this.chaptersService.findOne(id);
   }
 
@@ -56,7 +58,7 @@ export class ChaptersController {
   @UseGuards(JwtAuthGuard)
   async findAllByAuthor(
     @Request() req: CustomRequest,
-    @Query('book_id') bookId: number,
+    @Query('book_id', ParseIntPipe) bookId: any,
   ) {
     if (!bookId)
       throw new BadRequestException('You must add book id as query param');
@@ -67,7 +69,7 @@ export class ChaptersController {
   @UseGuards(JwtAuthGuard)
   async findOneByAuthor(
     @Request() req: CustomRequest,
-    @Param('id', ParseIntPipe) chapterId: number,
+    @Param('id', ParseIntPipe) chapterId: any,
   ) {
     return this.chaptersService.findOneByAuthor(req.user, chapterId);
   }
@@ -76,7 +78,7 @@ export class ChaptersController {
   @UseGuards(JwtAuthGuard)
   async update(
     @Request() req: CustomRequest,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseIntPipe) id: any,
     @Body() updateChapterDto: UpdateChapterDto,
   ): Promise<Chapter> {
     return this.chaptersService.update(req.user, id, updateChapterDto);
@@ -86,7 +88,7 @@ export class ChaptersController {
   @UseGuards(JwtAuthGuard)
   async remove(
     @Request() req: CustomRequest,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseIntPipe) id: any,
   ): Promise<Chapter> {
     return this.chaptersService.remove(req.user, id);
   }

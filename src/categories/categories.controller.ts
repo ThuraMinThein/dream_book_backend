@@ -45,7 +45,7 @@ export class CategoriesController {
   @Patch(':id')
   @UseInterceptors(FileInterceptor('icon'))
   async update(
-    @Param('id', ParseIntPipe) categoryId: number,
+    @Param('id', ParseIntPipe) categoryId: any,
     @UploadedFile() icon: Express.Multer.File,
     @Body() updateCategoryDto: UpdateCategoryDto,
   ): Promise<Category> {
@@ -53,9 +53,7 @@ export class CategoriesController {
   }
 
   @Delete(':id')
-  async remove(
-    @Param('id', ParseIntPipe) categoryId: number,
-  ): Promise<Category> {
+  async remove(@Param('id', ParseIntPipe) categoryId: any): Promise<Category> {
     return this.categoriesService.remove(categoryId);
   }
 }

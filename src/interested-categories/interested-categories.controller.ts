@@ -63,7 +63,7 @@ export class InterestedCategoriesController {
   @SerializeOptions({ groups: [GROUP_USER] })
   async delete(
     @Request() req: CustomRequest,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseIntPipe) id: any,
   ): Promise<InterestedCategory> {
     return this.interestedCategoriesService.delete(req.user, id);
   }

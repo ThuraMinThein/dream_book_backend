@@ -10,11 +10,12 @@ import {
   UseInterceptors,
   SerializeOptions,
   ClassSerializerInterceptor,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { Favorite } from './entities/favorite.entity';
 import { FavoritesService } from './favorites.service';
-import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.gurad';
+import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { GROUP_USER } from '../utils/serializers/group.serializer';
 import { CustomRequest } from '../common/interfaces/custom-request.interface';
 import { TypeormExceptionFilter } from '../common/filters/exceptionfilters/typeorm-exception.filter';
@@ -54,7 +55,7 @@ export class FavoritesController {
   @SerializeOptions({ groups: [GROUP_USER] })
   async delete(
     @Request() req: CustomRequest,
-    @Body('bookId') bookId: number,
+    @Body('bookId', ParseIntPipe) bookId: any,
   ): Promise<any> {
     return this.favoritesService.delete(req.user, bookId);
   }
