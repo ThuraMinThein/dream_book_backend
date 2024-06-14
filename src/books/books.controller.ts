@@ -135,19 +135,36 @@ export class BooksController {
     }
   }
 
-  @Get('public/:id')
+  // @Get('public/:id')
+  // @UseGuards(JwtOptionalGuard)
+  // @UseInterceptors(ClassSerializerInterceptor)
+  // @SerializeOptions({ groups: [GROUP_USER] })
+  // async findOne(
+  //   @Request() req: CustomRequest,
+  //   @Param('id', ParseIntPipe) bookId: any,
+  // ): Promise<Book> {
+  //   try {
+  //     return this.booksService.findOne(bookId, req.user);
+  //   } catch (error) {
+  //     throw new InternalServerErrorException(
+  //       `Error while fetching public book`,
+  //     );
+  //   }
+  // }
+
+  @Get('public/:slug')
   @UseGuards(JwtOptionalGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({ groups: [GROUP_USER] })
-  async findOne(
+  async findOneWithSlug(
     @Request() req: CustomRequest,
-    @Param('id', ParseIntPipe) bookId: any,
+    @Param('slug') slug: string,
   ): Promise<Book> {
     try {
-      return this.booksService.findOne(bookId, req.user);
+      return this.booksService.findOneWithSlug(slug, req.user);
     } catch (error) {
       throw new InternalServerErrorException(
-        `Error while fetching public bookId: ${bookId}`,
+        `Error while fetching public book`,
       );
     }
   }
@@ -176,19 +193,19 @@ export class BooksController {
     }
   }
 
-  @Get('author/:id')
+  @Get('author/:slug')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({ groups: [GROUP_USER] })
-  async findOneByAuthor(
+  async findOneWithSlugByAuthor(
     @Request() req: CustomRequest,
-    @Param('id', ParseIntPipe) bookId: any,
+    @Param('slug') slug: string,
   ): Promise<Book> {
     try {
-      return this.booksService.findOneByAuthor(req.user, bookId);
+      return this.booksService.findOneWithSlugByAuthor(req.user, slug);
     } catch (error) {
       throw new InternalServerErrorException(
-        `Error while fetching author created bookId: ${bookId}`,
+        `Error while fetching author created book slug`,
       );
     }
   }

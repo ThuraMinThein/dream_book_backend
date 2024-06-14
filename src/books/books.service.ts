@@ -208,6 +208,26 @@ export class BooksService {
     return book;
   }
 
+  async findOneWithSlug(slug: string, user?: User): Promise<Book> {
+    const book = await this.booksRepository.findOne({
+      where: {
+        slug,
+        status: Status.PUBLISHED,
+      },
+      relations: {
+        user: true,
+        category: true,
+      },
+    });
+    if (!book) {
+      throw new NotFoundException('Book not found');
+    }
+    //if the user loggedin check if this book is user's favorited book
+    await this.setFavoriteOneBook(book, user);
+
+    return book;
+  }
+
   //find books from author
   async findAllByAuthor(
     user: User,
@@ -233,6 +253,29 @@ export class BooksService {
     await this.setFavoriteManyBooks(paginatedBooks, user);
 
     return paginatedBooks;
+  }
+
+  async findOneWithSlugByAuthor(user: User, slug: string): Promise<Book> {
+    const book = await this.booksRepository.findOne({
+      where: {
+        slug,
+        user: {
+          userId: user.userId,
+        },
+      },
+      relations: {
+        user: true,
+        category: true,
+      },
+    });
+    if (!book) {
+      throw new NotFoundException('Book not found');
+    }
+
+    //check if this book is author favorite book or not
+    await this.setFavoriteOneBook(book, user);
+
+    return book;
   }
 
   async findOneByAuthor(user: User, bookId: number): Promise<Book> {
