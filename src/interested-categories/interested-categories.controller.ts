@@ -12,8 +12,9 @@ import {
   UseInterceptors,
   SerializeOptions,
   ClassSerializerInterceptor,
+  InternalServerErrorException,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/guard/jwt-auth.gurad';
+import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { GROUP_USER } from '../utils/serializers/group.serializer';
 import { InterestedCategory } from './entities/interested-category.entity';
 import { InterestedCategoriesService } from './interested-categories.service';
@@ -39,10 +40,16 @@ export class InterestedCategoriesController {
     @Request() req: CustomRequest,
     @Body() createInterestedCategoryDto: CreateInterestedCategoryDto,
   ): Promise<InterestedCategory[]> {
-    return this.interestedCategoriesService.create(
-      req.user,
-      createInterestedCategoryDto,
-    );
+    try {
+      return this.interestedCategoriesService.create(
+        req.user,
+        createInterestedCategoryDto,
+      );
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Error while creating interested category',
+      );
+    }
   }
 
   @Get()
@@ -52,9 +59,15 @@ export class InterestedCategoriesController {
   async getInterestedCategoriesByUser(
     @Request() req: CustomRequest,
   ): Promise<InterestedCategory[]> {
-    return this.interestedCategoriesService.getInterestedCategoriesByUser(
-      req.user,
-    );
+    try {
+      return this.interestedCategoriesService.getInterestedCategoriesByUser(
+        req.user,
+      );
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Error while fetching interested categories',
+      );
+    }
   }
 
   @Delete(':id')
@@ -65,6 +78,12 @@ export class InterestedCategoriesController {
     @Request() req: CustomRequest,
     @Param('id', ParseIntPipe) id: any,
   ): Promise<InterestedCategory> {
-    return this.interestedCategoriesService.delete(req.user, id);
+    try {
+      return this.interestedCategoriesService.delete(req.user, id);
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Error while deleting interested category',
+      );
+    }
   }
 }

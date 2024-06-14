@@ -4,6 +4,7 @@ import {
   Controller,
   UseInterceptors,
   ClassSerializerInterceptor,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { AuthDtos } from './dto/auth.dto';
 import { AuthService } from './auth.service';
@@ -18,12 +19,20 @@ export class AuthController {
   @Post('signup')
   @UseInterceptors(ClassSerializerInterceptor)
   signUp(@Body() authDto: AuthDtos) {
-    return this.authService.signUp(authDto);
+    try {
+      return this.authService.signUp(authDto);
+    } catch (error) {
+      throw new InternalServerErrorException('Error while signing up user');
+    }
   }
 
   @Post('login')
   @UseInterceptors(ClassSerializerInterceptor)
   logIn(@Body() authDto: AuthDtos) {
-    return this.authService.logIn(authDto);
+    try {
+      return this.authService.logIn(authDto);
+    } catch (error) {
+      throw new InternalServerErrorException('Error while logging in user');
+    }
   }
 }

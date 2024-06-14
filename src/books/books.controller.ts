@@ -17,6 +17,7 @@ import {
   SerializeOptions,
   BadRequestException,
   ClassSerializerInterceptor,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { Book } from './entities/book.entity';
 import { BooksService } from './books.service';
@@ -24,7 +25,7 @@ import { SortBy } from '../utils/enums/sortBy.enum';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { JwtAuthGuard } from '../auth/guard/jwt-auth.gurad';
+import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { GROUP_USER } from '../utils/serializers/group.serializer';
 import { JwtOptionalGuard } from '../auth/guard/jwt-optional.guard';
 import { ParseNumberPipe } from '../common/pipes/parseNumberPipe.pipe';
@@ -52,7 +53,11 @@ export class BooksController {
     @Body() createBookDto: CreateBookDto,
   ): Promise<Book> {
     if (!coverImage) throw new BadRequestException('Cover Image is required');
-    return this.booksService.create(req.user, coverImage, createBookDto);
+    try {
+      return this.booksService.create(req.user, coverImage, createBookDto);
+    } catch (error) {
+      throw new InternalServerErrorException('Error while creating book');
+    }
   }
 
   //recommended books
@@ -67,7 +72,13 @@ export class BooksController {
       page,
       limit,
     };
-    return this.booksService.getRecommendedBookByUser(options, req.user);
+    try {
+      return this.booksService.getRecommendedBookByUser(options, req.user);
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Error while fetching recommended books',
+      );
+    }
   }
 
   @Get('popular')
@@ -81,7 +92,13 @@ export class BooksController {
       page,
       limit,
     };
-    return this.booksService.getPopularBooks(req.user, options);
+    try {
+      return this.booksService.getPopularBooks(req.user, options);
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Error while fetching popular books',
+      );
+    }
   }
 
   //get books from all users
@@ -102,14 +119,20 @@ export class BooksController {
       page,
       limit,
     };
-    return await this.booksService.findAll(
-      options,
-      search,
-      sortBy,
-      userId,
-      categoryIds,
-      req.user,
-    );
+    try {
+      return await this.booksService.findAll(
+        options,
+        search,
+        sortBy,
+        userId,
+        categoryIds,
+        req.user,
+      );
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Error while fetching public books',
+      );
+    }
   }
 
   @Get('public/:id')
@@ -120,7 +143,13 @@ export class BooksController {
     @Request() req: CustomRequest,
     @Param('id', ParseIntPipe) bookId: any,
   ): Promise<Book> {
-    return this.booksService.findOne(bookId, req.user);
+    try {
+      return this.booksService.findOne(bookId, req.user);
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Error while fetching public bookId: ${bookId}`,
+      );
+    }
   }
 
   //get books from author
@@ -138,7 +167,13 @@ export class BooksController {
       page,
       limit,
     };
-    return this.booksService.findAllByAuthor(req.user, sortBy, options);
+    try {
+      return this.booksService.findAllByAuthor(req.user, sortBy, options);
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Error while fetching author created books',
+      );
+    }
   }
 
   @Get('author/:id')
@@ -149,7 +184,13 @@ export class BooksController {
     @Request() req: CustomRequest,
     @Param('id', ParseIntPipe) bookId: any,
   ): Promise<Book> {
-    return this.booksService.findOneByAuthor(req.user, bookId);
+    try {
+      return this.booksService.findOneByAuthor(req.user, bookId);
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Error while fetching author created bookId: ${bookId}`,
+      );
+    }
   }
 
   @Get('deleted')
@@ -157,7 +198,13 @@ export class BooksController {
   @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({ groups: [GROUP_USER] })
   async getAllDeletedBooks(@Request() req: CustomRequest): Promise<Book[]> {
-    return this.booksService.getAllSoftDeletedBooks(req.user);
+    try {
+      return this.booksService.getAllSoftDeletedBooks(req.user);
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Error while fetching all deleted books',
+      );
+    }
   }
 
   @Patch(':id')
@@ -171,12 +218,18 @@ export class BooksController {
     @UploadedFile() coverImage: Express.Multer.File,
     @Body() updateBookDto: UpdateBookDto,
   ): Promise<Book> {
-    return this.booksService.update(
-      req.user,
-      bookId,
-      coverImage,
-      updateBookDto,
-    );
+    try {
+      return this.booksService.update(
+        req.user,
+        bookId,
+        coverImage,
+        updateBookDto,
+      );
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Error while updating bookId: ${bookId}`,
+      );
+    }
   }
 
   @Patch('restore/:id')
@@ -187,7 +240,13 @@ export class BooksController {
     @Request() req: CustomRequest,
     @Param('id', ParseIntPipe) bookId: any,
   ): Promise<Book> {
-    return this.booksService.restore(req.user, bookId);
+    try {
+      return this.booksService.restore(req.user, bookId);
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Error while restoring bookId: ${bookId}`,
+      );
+    }
   }
 
   @Delete('soft/:id')
@@ -198,7 +257,13 @@ export class BooksController {
     @Request() req: CustomRequest,
     @Param('id', ParseIntPipe) bookId: any,
   ): Promise<Book> {
-    return this.booksService.softDelete(req.user, bookId);
+    try {
+      return this.booksService.softDelete(req.user, bookId);
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Error while soft deleting bookId: ${bookId}`,
+      );
+    }
   }
 
   @Delete('hard/:id')
@@ -209,6 +274,12 @@ export class BooksController {
     @Request() req: CustomRequest,
     @Param('id', ParseIntPipe) bookId: any,
   ): Promise<Book> {
-    return this.booksService.remove(req.user, bookId);
+    try {
+      return this.booksService.remove(req.user, bookId);
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Error while hard deleting bookId: ${bookId}`,
+      );
+    }
   }
 }

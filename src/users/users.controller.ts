@@ -11,12 +11,13 @@ import {
   UseInterceptors,
   SerializeOptions,
   ClassSerializerInterceptor,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { JwtAuthGuard } from '../auth/guard/jwt-auth.gurad';
+import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { GROUP_USER } from '../utils/serializers/group.serializer';
 import { CustomRequest } from '../common/interfaces/custom-request.interface';
 import { TypeormExceptionFilter } from 'src/common/filters/exceptionfilters/typeorm-exception.filter';
@@ -34,8 +35,14 @@ export class UsersController {
   @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({ groups: [GROUP_USER] })
   getCurrentUser(@Request() req: CustomRequest): User {
-    const user = req.user;
-    return user;
+    try {
+      const user = req.user;
+      return user;
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Error while fetching current user',
+      );
+    }
   }
 
   // @Get()
@@ -62,7 +69,11 @@ export class UsersController {
     @UploadedFile() profilePicture: Express.Multer.File,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<User> {
-    return this.usersService.update(req.user, profilePicture, updateUserDto);
+    try {
+      return this.usersService.update(req.user, profilePicture, updateUserDto);
+    } catch (error) {
+      throw new InternalServerErrorException('Error while updating user');
+    }
   }
 
   @Delete()
@@ -70,6 +81,10 @@ export class UsersController {
   @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({ groups: [GROUP_USER] })
   async remove(@Request() req: CustomRequest): Promise<User> {
-    return this.usersService.remove(req.user);
+    try {
+      return this.usersService.remove(req.user);
+    } catch (error) {
+      throw new InternalServerErrorException('Error while deleting user');
+    }
   }
 }

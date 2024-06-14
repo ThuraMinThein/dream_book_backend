@@ -1,23 +1,24 @@
 import {
-  Controller,
   Get,
   Post,
   Body,
   Patch,
   Param,
-  Delete,
-  UseFilters,
   Query,
-  UseGuards,
+  Delete,
   Request,
+  UseGuards,
+  UseFilters,
+  Controller,
   ParseIntPipe,
   BadRequestException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { Comment } from './entities/comment.entity';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
-import { JwtAuthGuard } from '../auth/guard/jwt-auth.gurad';
+import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { CustomRequest } from '../common/interfaces/custom-request.interface';
 import { TypeormExceptionFilter } from '../common/filters/exceptionfilters/typeorm-exception.filter';
 
@@ -35,7 +36,11 @@ export class CommentsController {
     @Request() req: CustomRequest,
     @Body() createCommentDto: CreateCommentDto,
   ): Promise<Comment> {
-    return this.commentsService.create(req.user, createCommentDto);
+    try {
+      return this.commentsService.create(req.user, createCommentDto);
+    } catch (error) {
+      throw new InternalServerErrorException('Error while creating comment');
+    }
   }
 
   @Get()
@@ -44,7 +49,11 @@ export class CommentsController {
   ): Promise<Comment[]> {
     if (!bookId)
       throw new BadRequestException('You must add book id as query param');
-    return this.commentsService.findAll(bookId);
+    try {
+      return this.commentsService.findAll(bookId);
+    } catch (error) {
+      throw new InternalServerErrorException('Error while fetching comments');
+    }
   }
 
   @Patch(':id')
@@ -54,7 +63,11 @@ export class CommentsController {
     @Param('id', ParseIntPipe) id: any,
     @Body() updateCommentDto: UpdateCommentDto,
   ): Promise<Comment> {
-    return this.commentsService.update(req.user, id, updateCommentDto);
+    try {
+      return this.commentsService.update(req.user, id, updateCommentDto);
+    } catch (error) {
+      throw new InternalServerErrorException('Error while updating comment');
+    }
   }
 
   @Delete(':id')
@@ -63,6 +76,10 @@ export class CommentsController {
     @Request() req: CustomRequest,
     @Param('id', ParseIntPipe) id: any,
   ): Promise<Comment> {
-    return this.commentsService.remove(req.user, id);
+    try {
+      return this.commentsService.remove(req.user, id);
+    } catch (error) {
+      throw new InternalServerErrorException('Error while deleting comment');
+    }
   }
 }

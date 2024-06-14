@@ -11,6 +11,7 @@ import {
   ParseIntPipe,
   UseInterceptors,
   BadRequestException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { Category } from './entities/category.entity';
 import { CategoriesService } from './categories.service';
@@ -34,12 +35,20 @@ export class CategoriesController {
     @Body() createCategoryDto: CreateCategoryDto,
   ): Promise<Category> {
     if (!icon) throw new BadRequestException('Icon is required!');
-    return this.categoriesService.create(icon, createCategoryDto);
+    try {
+      return this.categoriesService.create(icon, createCategoryDto);
+    } catch (error) {
+      throw new InternalServerErrorException('Error while creating category');
+    }
   }
 
   @Get()
   async findAll(): Promise<Category[]> {
-    return this.categoriesService.findAll();
+    try {
+      return this.categoriesService.findAll();
+    } catch (error) {
+      throw new InternalServerErrorException('Error while fetching categories');
+    }
   }
 
   @Patch(':id')
@@ -49,11 +58,19 @@ export class CategoriesController {
     @UploadedFile() icon: Express.Multer.File,
     @Body() updateCategoryDto: UpdateCategoryDto,
   ): Promise<Category> {
-    return this.categoriesService.update(categoryId, icon, updateCategoryDto);
+    try {
+      return this.categoriesService.update(categoryId, icon, updateCategoryDto);
+    } catch (error) {
+      throw new InternalServerErrorException('Error while updating category');
+    }
   }
 
   @Delete(':id')
   async remove(@Param('id', ParseIntPipe) categoryId: any): Promise<Category> {
-    return this.categoriesService.remove(categoryId);
+    try {
+      return this.categoriesService.remove(categoryId);
+    } catch (error) {
+      throw new InternalServerErrorException('Error while deleting category');
+    }
   }
 }

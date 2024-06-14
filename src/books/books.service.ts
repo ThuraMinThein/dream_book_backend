@@ -139,7 +139,7 @@ export class BooksService {
   ): Promise<Pagination<Book>> {
     const qb = this.publishedBooksWithUserAndCategory();
 
-    //search with title keywords and descrpition
+    //search with title keywords and description
     if (search) {
       // search with book title first
       let searchResult: Book[] = await qb
@@ -182,7 +182,7 @@ export class BooksService {
       throw new NotFoundException('No books found');
     }
 
-    //jf user logged in check if the book is user's favorited book
+    //jf user logged in check if the book is user's favorite book
     await this.setFavoriteManyBooks(paginatedBooks, user);
 
     return paginatedBooks;
@@ -229,7 +229,7 @@ export class BooksService {
       throw new NotFoundException('No books found');
     }
 
-    //check these books are user's favorited books or not
+    //check these books are user's favorite books or not
     await this.setFavoriteManyBooks(paginatedBooks, user);
 
     return paginatedBooks;
@@ -252,7 +252,7 @@ export class BooksService {
       throw new NotFoundException('Book not found');
     }
 
-    //check if this book is author favorited book or not
+    //check if this book is author favorite book or not
     await this.setFavoriteOneBook(book, user);
 
     return book;

@@ -11,8 +11,9 @@ import {
   UseInterceptors,
   SerializeOptions,
   ClassSerializerInterceptor,
+  InternalServerErrorException,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/guard/jwt-auth.gurad';
+import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { Progress } from './entities/chapter-progress.entity';
 import { GROUP_USER } from '../utils/serializers/group.serializer';
 import { ChapterProgressService } from './chapter-progress.service';
@@ -37,16 +38,28 @@ export class ChapterProgressController {
     @Request() req: CustomRequest,
     @Body() createChapterProgressDto: CreateChapterProgressDto,
   ): Promise<Progress> {
-    return this.chapterProgressService.create(
-      req.user,
-      createChapterProgressDto,
-    );
+    try {
+      return this.chapterProgressService.create(
+        req.user,
+        createChapterProgressDto,
+      );
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Error while creating chapter progress',
+      );
+    }
   }
 
   @Get()
   @UseGuards(JwtAuthGuard)
   async getCurrentChapter(@Request() req: CustomRequest): Promise<any> {
-    return this.chapterProgressService.getCurrentChapter(req.user);
+    try {
+      return this.chapterProgressService.getCurrentChapter(req.user);
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Error while fetching current chapter',
+      );
+    }
   }
 
   @Patch(':id')
@@ -55,11 +68,15 @@ export class ChapterProgressController {
     @Request() req: CustomRequest,
     @Param('id', ParseIntPipe) id: any,
     @Body() updateChapterProgressDto: UpdateChapterProgressDto,
-  ) {
-    return this.chapterProgressService.update(
-      req.user,
-      id,
-      updateChapterProgressDto,
-    );
+  ): Promise<Progress> {
+    try {
+      return this.chapterProgressService.update(
+        req.user,
+        id,
+        updateChapterProgressDto,
+      );
+    } catch (error) {
+      throw new InternalServerErrorException('Error while updating progress');
+    }
   }
 }

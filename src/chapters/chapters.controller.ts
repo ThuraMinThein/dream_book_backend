@@ -12,12 +12,13 @@ import {
   Controller,
   ParseIntPipe,
   BadRequestException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { Chapter } from './entities/chapter.entity';
 import { ChaptersService } from './chapters.service';
 import { CreateChapterDto } from './dto/create-chapter.dto';
 import { UpdateChapterDto } from './dto/update-chapter.dto';
-import { JwtAuthGuard } from '../auth/guard/jwt-auth.gurad';
+import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { CustomRequest } from '../common/interfaces/custom-request.interface';
 import { TypeormExceptionFilter } from '../common/filters/exceptionfilters/typeorm-exception.filter';
 
@@ -35,7 +36,11 @@ export class ChaptersController {
     @Request() req: CustomRequest,
     @Body() createChapterDto: CreateChapterDto,
   ): Promise<Chapter> {
-    return this.chaptersService.create(req.user, createChapterDto);
+    try {
+      return this.chaptersService.create(req.user, createChapterDto);
+    } catch (error) {
+      throw new InternalServerErrorException('Error while creating chapter');
+    }
   }
 
   //get chapters from all users created books
@@ -45,12 +50,24 @@ export class ChaptersController {
   ): Promise<Chapter[]> {
     if (!bookId)
       throw new BadRequestException('You must add book id as query param');
-    return this.chaptersService.findAll(bookId);
+    try {
+      return this.chaptersService.findAll(bookId);
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Error while fetching published chapters',
+      );
+    }
   }
 
   @Get('public/:id')
   async findOne(@Param('id', ParseIntPipe) id: any): Promise<Chapter> {
-    return this.chaptersService.findOne(id);
+    try {
+      return this.chaptersService.findOne(id);
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Error while fetching published chapterId: ${id}`,
+      );
+    }
   }
 
   //get chapters from author created books
@@ -62,7 +79,13 @@ export class ChaptersController {
   ) {
     if (!bookId)
       throw new BadRequestException('You must add book id as query param');
-    return this.chaptersService.findAllByAuthor(req.user, bookId);
+    try {
+      return this.chaptersService.findAllByAuthor(req.user, bookId);
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Error while fetching author created chapters',
+      );
+    }
   }
 
   @Get('author/:id')
@@ -71,7 +94,13 @@ export class ChaptersController {
     @Request() req: CustomRequest,
     @Param('id', ParseIntPipe) chapterId: any,
   ) {
-    return this.chaptersService.findOneByAuthor(req.user, chapterId);
+    try {
+      return this.chaptersService.findOneByAuthor(req.user, chapterId);
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Error while fetching author created chapterId: ${chapterId}`,
+      );
+    }
   }
 
   @Patch(':id')
@@ -81,7 +110,11 @@ export class ChaptersController {
     @Param('id', ParseIntPipe) id: any,
     @Body() updateChapterDto: UpdateChapterDto,
   ): Promise<Chapter> {
-    return this.chaptersService.update(req.user, id, updateChapterDto);
+    try {
+      return this.chaptersService.update(req.user, id, updateChapterDto);
+    } catch (error) {
+      throw new InternalServerErrorException('Error while updating chapter');
+    }
   }
 
   @Delete(':id')
@@ -90,6 +123,10 @@ export class ChaptersController {
     @Request() req: CustomRequest,
     @Param('id', ParseIntPipe) id: any,
   ): Promise<Chapter> {
-    return this.chaptersService.remove(req.user, id);
+    try {
+      return this.chaptersService.remove(req.user, id);
+    } catch (error) {
+      throw new InternalServerErrorException('Error while deleting chapter');
+    }
   }
 }

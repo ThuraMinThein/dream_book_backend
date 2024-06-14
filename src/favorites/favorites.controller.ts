@@ -7,14 +7,15 @@ import {
   UseGuards,
   UseFilters,
   Controller,
+  ParseIntPipe,
   UseInterceptors,
   SerializeOptions,
   ClassSerializerInterceptor,
-  ParseIntPipe,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { Favorite } from './entities/favorite.entity';
 import { FavoritesService } from './favorites.service';
-import { JwtAuthGuard } from '../auth/guard/jwt-auth.gurad';
+import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { GROUP_USER } from '../utils/serializers/group.serializer';
 import { CustomRequest } from '../common/interfaces/custom-request.interface';
@@ -36,7 +37,11 @@ export class FavoritesController {
     @Request() req: CustomRequest,
     @Body() createFavoriteDto: CreateFavoriteDto,
   ): Promise<Favorite> {
-    return this.favoritesService.create(req.user, createFavoriteDto);
+    try {
+      return this.favoritesService.create(req.user, createFavoriteDto);
+    } catch (error) {
+      throw new InternalServerErrorException('Error while creating favorite');
+    }
   }
 
   @Get()
@@ -46,7 +51,11 @@ export class FavoritesController {
   async getAllFavoriteByUser(
     @Request() req: CustomRequest,
   ): Promise<Favorite[]> {
-    return this.favoritesService.getAllFavoriteByUser(req.user);
+    try {
+      return this.favoritesService.getAllFavoriteByUser(req.user);
+    } catch (error) {
+      throw new InternalServerErrorException('Error while fetching favorites');
+    }
   }
 
   @Delete()
@@ -57,6 +66,10 @@ export class FavoritesController {
     @Request() req: CustomRequest,
     @Body('bookId', ParseIntPipe) bookId: any,
   ): Promise<any> {
-    return this.favoritesService.delete(req.user, bookId);
+    try {
+      return this.favoritesService.delete(req.user, bookId);
+    } catch (error) {
+      throw new InternalServerErrorException('Error while deleting favorite');
+    }
   }
 }
