@@ -22,6 +22,7 @@ export class CreateBookDto {
   @IsArray()
   @IsString({ each: true })
   @ArrayMinSize(1)
+  @Transform(({ obj, key }) => JSON.parse(obj[key]))
   keywords: string[];
 
   @IsEnum(Status)
