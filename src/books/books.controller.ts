@@ -135,23 +135,6 @@ export class BooksController {
     }
   }
 
-  // @Get('public/:id')
-  // @UseGuards(JwtOptionalGuard)
-  // @UseInterceptors(ClassSerializerInterceptor)
-  // @SerializeOptions({ groups: [GROUP_USER] })
-  // async findOne(
-  //   @Request() req: CustomRequest,
-  //   @Param('id', ParseIntPipe) bookId: any,
-  // ): Promise<Book> {
-  //   try {
-  //     return this.booksService.findOne(bookId, req.user);
-  //   } catch (error) {
-  //     throw new InternalServerErrorException(
-  //       `Error while fetching public book`,
-  //     );
-  //   }
-  // }
-
   @Get('public/:slug')
   @UseGuards(JwtOptionalGuard)
   @UseInterceptors(ClassSerializerInterceptor)
@@ -224,79 +207,71 @@ export class BooksController {
     }
   }
 
-  @Patch(':id')
+  @Patch(':slug')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   @UseInterceptors(FileInterceptor('coverImage'))
   @SerializeOptions({ groups: [GROUP_USER] })
   async update(
     @Request() req: CustomRequest,
-    @Param('id', ParseIntPipe) bookId: any,
+    @Param('slug') bookSlug: string,
     @UploadedFile() coverImage: Express.Multer.File,
     @Body() updateBookDto: UpdateBookDto,
   ): Promise<Book> {
     try {
       return this.booksService.update(
         req.user,
-        bookId,
+        bookSlug,
         coverImage,
         updateBookDto,
       );
     } catch (error) {
-      throw new InternalServerErrorException(
-        `Error while updating bookId: ${bookId}`,
-      );
+      throw new InternalServerErrorException(`Error while updating book`);
     }
   }
 
-  @Patch('restore/:id')
+  @Patch('restore/:slug')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({ groups: [GROUP_USER] })
   async restore(
     @Request() req: CustomRequest,
-    @Param('id', ParseIntPipe) bookId: any,
+    @Param('slug') bookSlug: string,
   ): Promise<Book> {
     try {
-      return this.booksService.restore(req.user, bookId);
+      return this.booksService.restore(req.user, bookSlug);
     } catch (error) {
-      throw new InternalServerErrorException(
-        `Error while restoring bookId: ${bookId}`,
-      );
+      throw new InternalServerErrorException(`Error while restoring book`);
     }
   }
 
-  @Delete('soft/:id')
+  @Delete('soft/:slug')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({ groups: [GROUP_USER] })
   async softDelete(
     @Request() req: CustomRequest,
-    @Param('id', ParseIntPipe) bookId: any,
+    @Param('slug') bookSlug: string,
   ): Promise<Book> {
     try {
-      return this.booksService.softDelete(req.user, bookId);
+      return this.booksService.softDelete(req.user, bookSlug);
     } catch (error) {
-      throw new InternalServerErrorException(
-        `Error while soft deleting bookId: ${bookId}`,
-      );
+      throw new InternalServerErrorException(`Error while soft deleting book`);
     }
   }
 
-  @Delete('hard/:id')
+  @Delete('hard/:slug')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({ groups: [GROUP_USER] })
   async remove(
     @Request() req: CustomRequest,
-    @Param('id', ParseIntPipe) bookId: any,
+    @Param('slug') bookSlug: string,
   ): Promise<Book> {
     try {
-      return this.booksService.remove(req.user, bookId);
+      return this.booksService.remove(req.user, bookSlug);
     } catch (error) {
-      throw new InternalServerErrorException(
-        `Error while hard deleting bookId: ${bookId}`,
-      );
+      throw new InternalServerErrorException(`Error while hard deleting book`);
     }
   }
 }

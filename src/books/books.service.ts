@@ -303,12 +303,12 @@ export class BooksService {
 
   async update(
     user: User,
-    bookId: number,
+    bookSlug: string,
     newCoverImage: Express.Multer.File,
     updateBookDto: UpdateBookDto,
   ): Promise<Book> {
     //find book
-    const book = await this.findOneByAuthor(user, bookId);
+    const book = await this.findOneWithSlugByAuthor(user, bookSlug);
 
     //if user changed the title, gotta update the slug
     let slug = book.slug;
@@ -352,26 +352,26 @@ export class BooksService {
     return this.booksRepository.save(updatedBook);
   }
 
-  async softDelete(user: User, bookId: number): Promise<Book> {
-    const book = await this.findOneByAuthor(user, bookId);
+  async softDelete(user: User, bookSlug: string): Promise<Book> {
+    const book = await this.findOneWithSlugByAuthor(user, bookSlug);
 
-    await this.booksRepository.softDelete(bookId);
+    await this.booksRepository.softDelete(book.bookId);
     return book;
   }
 
-  async restore(user: User, bookId: number): Promise<Book> {
-    const deletedBook = await this.getOneSoftDeletedBook(user, bookId);
-    await this.booksRepository.restore(bookId);
+  async restore(user: User, bookSlug: string): Promise<Book> {
+    const deletedBook = await this.getOneSoftDeletedBook(user, bookSlug);
+    await this.booksRepository.restore(deletedBook.bookId);
     return deletedBook;
   }
 
-  async remove(user: User, bookId: number): Promise<Book> {
-    const book = await this.getOneSoftDeletedBook(user, bookId);
+  async remove(user: User, bookSlug: string): Promise<Book> {
+    const book = await this.getOneSoftDeletedBook(user, bookSlug);
     //delete image in cloudinary if there is an image
     book.coverImage &&
       (await this.cloudinaryService.deleteImage(book.coverImage));
 
-    await this.booksRepository.delete(bookId);
+    await this.booksRepository.delete(book.bookId);
     return book;
   }
 
@@ -428,19 +428,19 @@ export class BooksService {
     return deletedBooks;
   }
 
-  async getOneSoftDeletedBook(user: User, bookId: number): Promise<Book> {
+  async getOneSoftDeletedBook(user: User, slug: string): Promise<Book> {
     const deletedBook = await this.booksRepository
       .createQueryBuilder('books')
       .withDeleted()
       .leftJoinAndSelect(`books.user`, 'user')
       .leftJoinAndSelect(`books.category`, 'category')
       .where('user.userId =:userId', { userId: user.userId })
-      .andWhere('books.bookId =:bookId', { bookId })
+      .andWhere('books.slug =:slug', { slug })
       .andWhere('books.deleted_at IS NOT NULL ')
       .getOne();
 
     if (!deletedBook)
-      throw new NotFoundException('No book is deleted with this id');
+      throw new NotFoundException('No book is deleted witht this title');
     return deletedBook;
   }
 
