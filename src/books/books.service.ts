@@ -17,7 +17,7 @@ import { SortBy } from '../utils/enums/sortBy.enum';
 import { User } from '../users/entities/user.entity';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { Brackets, Repository, SelectQueryBuilder } from 'typeorm';
 import { Favorite } from '../favorites/entities/favorite.entity';
 import { CategoriesService } from '../categories/categories.service';
 import { CloudinaryService } from '../common/services/cloudinary/cloudinary.service';
@@ -106,7 +106,7 @@ export class BooksService {
     return paginatedBooks;
   }
 
-  //find popular books based on users' favorites
+  //find popular books based by users' favorites
   async getPopularBooks(
     user: User,
     options: IPaginationOptions,
@@ -121,6 +121,45 @@ export class BooksService {
     if (paginatedBooks.items.length === 0) {
       throw new NotFoundException('No books found');
     }
+
+    //jf user logged in check if the book is user's favorited book
+    await this.setFavoriteManyBooks(paginatedBooks, user);
+
+    return paginatedBooks;
+  }
+
+  //find related books by current book slug
+  async getRelatedBooks(
+    slug: string,
+    options: IPaginationOptions,
+    user?: User,
+  ): Promise<Pagination<Book>> {
+    const { category, keywords, bookId } = await this.findOneWithSlug(slug);
+
+    const qb = this.publishedBooksWithUserAndCategory();
+
+    qb.andWhere(
+      new Brackets((qb) => {
+        qb.where('books.category_id = :categoryId', {
+          categoryId: category.categoryId,
+        }).orWhere(
+          'EXISTS (SELECT 1 FROM unnest(books.keywords) keyword WHERE keyword IN (:...keywords))',
+          { keywords },
+        );
+      }),
+    );
+
+    const paginatedBooks = await paginate<Book>(qb, options);
+
+    //remove current book from related books
+    const items = paginatedBooks.items;
+    items.forEach((item) => {
+      if (item.bookId === bookId) {
+        items.splice(items.indexOf(item), 1);
+        paginatedBooks.meta.totalItems--;
+        paginatedBooks.meta.itemCount--;
+      }
+    });
 
     //jf user logged in check if the book is user's favorited book
     await this.setFavoriteManyBooks(paginatedBooks, user);

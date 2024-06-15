@@ -63,6 +63,8 @@ export class BooksController {
   //recommended books
   @Get('recommended')
   @UseGuards(JwtOptionalGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
+  @SerializeOptions({ groups: [GROUP_USER] })
   async getRecommendedBookByUser(
     @Request() req: CustomRequest,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
@@ -83,6 +85,8 @@ export class BooksController {
 
   @Get('popular')
   @UseGuards(JwtOptionalGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
+  @SerializeOptions({ groups: [GROUP_USER] })
   async getPopularBooks(
     @Request() req: CustomRequest,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
@@ -97,6 +101,33 @@ export class BooksController {
     } catch (error) {
       throw new InternalServerErrorException(
         'Error while fetching popular books',
+      );
+    }
+  }
+
+  @Get('related')
+  @UseGuards(JwtOptionalGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
+  @SerializeOptions({ groups: [GROUP_USER] })
+  async getRelatedBooks(
+    @Request() req: CustomRequest,
+    @Query('slug') currentBookSlug: string,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(3), ParseIntPipe) limit: number,
+  ): Promise<Pagination<Book>> {
+    const options: IPaginationOptions = {
+      page,
+      limit,
+    };
+    try {
+      return this.booksService.getRelatedBooks(
+        currentBookSlug,
+        options,
+        req.user,
+      );
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Error while fetching related books',
       );
     }
   }
