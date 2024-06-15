@@ -44,13 +44,11 @@ export class CommentsController {
   }
 
   @Get()
-  async findAll(
-    @Query('book_id', ParseIntPipe) bookId: any,
-  ): Promise<Comment[]> {
-    if (!bookId)
+  async findAll(@Query('slug') slug: string): Promise<Comment[]> {
+    if (!slug)
       throw new BadRequestException('You must add book id as query param');
     try {
-      return this.commentsService.findAll(bookId);
+      return this.commentsService.findAll(slug);
     } catch (error) {
       throw new InternalServerErrorException('Error while fetching comments');
     }

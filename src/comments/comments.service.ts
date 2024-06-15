@@ -18,10 +18,10 @@ export class CommentsService {
     user: User,
     createCommentDto: CreateCommentDto,
   ): Promise<Comment> {
-    const { bookId } = createCommentDto;
+    const { slug } = createCommentDto;
 
     //check if book exists
-    const book = await this.booksService.findOne(bookId);
+    const book = await this.booksService.findOneWithSlug(slug);
 
     //create comment
     const newComment = this.commentsRepository.create({
@@ -33,14 +33,14 @@ export class CommentsService {
     return this.commentsRepository.save(newComment);
   }
 
-  async findAll(bookId: number): Promise<Comment[]> {
+  async findAll(slug: string): Promise<Comment[]> {
     //check if book exists
-    await this.booksService.findOne(bookId);
+    await this.booksService.findOneWithSlug(slug);
 
     const comments = await this.commentsRepository.find({
       where: {
         book: {
-          bookId,
+          slug,
         },
       },
       relations: {

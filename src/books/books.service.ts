@@ -188,26 +188,6 @@ export class BooksService {
     return paginatedBooks;
   }
 
-  async findOne(bookId: number, user?: User): Promise<Book> {
-    const book = await this.booksRepository.findOne({
-      where: {
-        bookId,
-        status: Status.PUBLISHED,
-      },
-      relations: {
-        user: true,
-        category: true,
-      },
-    });
-    if (!book) {
-      throw new NotFoundException('Book not found');
-    }
-    //if the user loggedin check if this book is user's favorited book
-    await this.setFavoriteOneBook(book, user);
-
-    return book;
-  }
-
   async findOneWithSlug(slug: string, user?: User): Promise<Book> {
     const book = await this.booksRepository.findOne({
       where: {
@@ -259,29 +239,6 @@ export class BooksService {
     const book = await this.booksRepository.findOne({
       where: {
         slug,
-        user: {
-          userId: user.userId,
-        },
-      },
-      relations: {
-        user: true,
-        category: true,
-      },
-    });
-    if (!book) {
-      throw new NotFoundException('Book not found');
-    }
-
-    //check if this book is author favorite book or not
-    await this.setFavoriteOneBook(book, user);
-
-    return book;
-  }
-
-  async findOneByAuthor(user: User, bookId: number): Promise<Book> {
-    const book = await this.booksRepository.findOne({
-      where: {
-        bookId,
         user: {
           userId: user.userId,
         },
@@ -461,8 +418,8 @@ export class BooksService {
     }
   }
 
-  async increaseFavorite(bookId: number) {
-    const book = await this.booksRepository.findOne({ where: { bookId } });
+  async increaseFavorite(slug: string) {
+    const book = await this.booksRepository.findOne({ where: { slug } });
     const favoriteCount = book.favoriteCount + 1;
     const increasedFavorite = this.booksRepository.create({
       ...book,
@@ -471,8 +428,8 @@ export class BooksService {
     return this.booksRepository.save(increasedFavorite);
   }
 
-  async decreaseFavorite(bookId: number) {
-    const book = await this.booksRepository.findOne({ where: { bookId } });
+  async decreaseFavorite(slug: string) {
+    const book = await this.booksRepository.findOne({ where: { slug } });
     let favoriteCount = book.favoriteCount;
     if (favoriteCount > 0) {
       favoriteCount--;
@@ -484,11 +441,11 @@ export class BooksService {
     return this.booksRepository.save(decreasedFavorite);
   }
 
-  async isFavorite(userId: number, bookId: number): Promise<boolean> {
+  async isFavorite(userId: number, slug: string): Promise<boolean> {
     const favorite = await this.favoritesRepository.findOne({
       where: {
         userId,
-        bookId,
+        book: { slug },
       },
     });
     return !!favorite;
@@ -501,7 +458,7 @@ export class BooksService {
     let isFavorite: boolean = false;
     if (user) {
       for (const book of paginatedBooks.items) {
-        isFavorite = await this.isFavorite(user.userId, book.bookId);
+        isFavorite = await this.isFavorite(user.userId, book.slug);
         book.isFavorite = isFavorite;
       }
     }
@@ -510,7 +467,7 @@ export class BooksService {
   async setFavoriteOneBook(book: Book, user?: User) {
     let isFavorite: boolean = false;
     if (user) {
-      isFavorite = await this.isFavorite(user.userId, book.bookId);
+      isFavorite = await this.isFavorite(user.userId, book.slug);
       book.isFavorite = isFavorite;
     }
   }

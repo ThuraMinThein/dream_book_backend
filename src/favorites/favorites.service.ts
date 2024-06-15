@@ -19,23 +19,23 @@ export class FavoritesService {
     user: User,
     createFavoriteDto: CreateFavoriteDto,
   ): Promise<Favorite> {
-    const { bookId } = createFavoriteDto;
+    const { slug } = createFavoriteDto;
     //check if book exists
-    const book = await this.booksService.findOne(bookId);
+    const book = await this.booksService.findOneWithSlug(slug);
 
     //check if the user already set the book to favorite
     const isUserSetFavorite = await this.findOneWithUserIdAndBookId(
       user.userId,
-      bookId,
+      slug,
     );
     if (isUserSetFavorite) return;
-    //plus one favorite in book
-    await this.booksService.increaseFavorite(bookId);
 
     const favorite = this.favoritesRepository.create({
       user,
       book,
     });
+    //plus one favorite in book
+    await this.booksService.increaseFavorite(slug);
     return this.favoritesRepository.save(favorite);
   }
 
@@ -57,11 +57,11 @@ export class FavoritesService {
     return favorites;
   }
 
-  async findOneWithUserIdAndBookId(userId: number, bookId: number) {
+  async findOneWithUserIdAndBookId(userId: number, slug: string) {
     const favorite = await this.favoritesRepository.findOne({
       where: {
         userId,
-        bookId,
+        book: { slug },
       },
       relations: {
         user: true,
@@ -71,16 +71,20 @@ export class FavoritesService {
     return favorite;
   }
 
-  async delete(user: User, bookId: number): Promise<any> {
+  async delete(user: User, slug: string): Promise<any> {
     const { userId } = user;
-    const favorite = await this.findOneWithUserIdAndBookId(userId, bookId);
-    if (!favorite) throw new NotFoundException('not found to delete');
-    //minus one favorite in book
-    await this.booksService.decreaseFavorite(bookId);
+
+    //find book with slug and get bookId
+    const bookId = (await this.booksService.findOneWithSlug(slug)).bookId;
+
+    const favorite = await this.findOneWithUserIdAndBookId(userId, slug);
+    if (!favorite) throw new NotFoundException('Favorite not found to delete');
     await this.favoritesRepository.delete({
       userId,
       bookId,
     });
+    //minus one favorite in book
+    await this.booksService.decreaseFavorite(slug);
 
     return favorite;
   }

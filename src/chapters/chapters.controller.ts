@@ -45,13 +45,11 @@ export class ChaptersController {
 
   //get chapters from all users created books
   @Get('public')
-  async findAll(
-    @Query('book_id', ParseIntPipe) bookId: any,
-  ): Promise<Chapter[]> {
-    if (!bookId)
+  async findAll(@Query('slug') bookSlug: string): Promise<Chapter[]> {
+    if (!bookSlug)
       throw new BadRequestException('You must add book id as query param');
     try {
-      return this.chaptersService.findAll(bookId);
+      return this.chaptersService.findAll(bookSlug);
     } catch (error) {
       throw new InternalServerErrorException(
         'Error while fetching published chapters',
@@ -75,12 +73,12 @@ export class ChaptersController {
   @UseGuards(JwtAuthGuard)
   async findAllByAuthor(
     @Request() req: CustomRequest,
-    @Query('book_id', ParseIntPipe) bookId: any,
+    @Query('slug') slug: string,
   ) {
-    if (!bookId)
+    if (!slug)
       throw new BadRequestException('You must add book id as query param');
     try {
-      return this.chaptersService.findAllByAuthor(req.user, bookId);
+      return this.chaptersService.findAllByAuthor(req.user, slug);
     } catch (error) {
       throw new InternalServerErrorException(
         'Error while fetching author created chapters',

@@ -21,9 +21,9 @@ export class ChapterProgressService {
     user: User,
     createChapterProgressDto: CreateChapterProgressDto,
   ): Promise<Progress> {
-    const { bookId, chapterId } = createChapterProgressDto;
+    const { slug, chapterId } = createChapterProgressDto;
     //check if book and chapter exists
-    const book = await this.booksService.findOne(bookId);
+    const book = await this.booksService.findOneWithSlug(slug);
     const chapter = await this.ChaptersService.findOne(chapterId);
 
     const progress = this.progressesRepository.create({
@@ -36,9 +36,10 @@ export class ChapterProgressService {
   }
 
   async getCurrentChapter(user: User): Promise<any> {
+    const { userId } = user;
     const currentProgress = await this.progressesRepository.findOne({
       where: {
-        userId: user.userId,
+        userId,
       },
     });
     if (!Progress) return 0;

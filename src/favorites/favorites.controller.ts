@@ -64,10 +64,10 @@ export class FavoritesController {
   @SerializeOptions({ groups: [GROUP_USER] })
   async delete(
     @Request() req: CustomRequest,
-    @Body('bookId', ParseIntPipe) bookId: any,
+    @Body('slug') slug: string,
   ): Promise<any> {
     try {
-      return this.favoritesService.delete(req.user, bookId);
+      return this.favoritesService.delete(req.user, slug);
     } catch (error) {
       throw new InternalServerErrorException('Error while deleting favorite');
     }

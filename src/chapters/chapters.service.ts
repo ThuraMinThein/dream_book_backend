@@ -20,11 +20,9 @@ export class ChaptersService {
     user: User,
     createChapterDto: CreateChapterDto,
   ): Promise<Chapter> {
+    const { slug } = createChapterDto;
     //check if book exists
-    const book = await this.booksService.findOneByAuthor(
-      user,
-      createChapterDto.bookId,
-    );
+    const book = await this.booksService.findOneWithSlugByAuthor(user, slug);
     const chaper = this.chaptersRepository.create({
       ...createChapterDto,
       book,
@@ -34,14 +32,14 @@ export class ChaptersService {
   }
 
   //find chaters which are published
-  async findAll(bookId: number): Promise<Chapter[]> {
+  async findAll(slug: string): Promise<Chapter[]> {
     //check if the book from param exists;
-    await this.booksService.findOne(bookId);
+    await this.booksService.findOneWithSlug(slug);
 
     const chapters = await this.chaptersRepository.find({
       where: {
         book: {
-          bookId,
+          slug,
         },
         status: Status.PUBLISHED,
       },
@@ -70,11 +68,11 @@ export class ChaptersService {
   }
 
   //find chpaters by author
-  async findAllByAuthor(user: User, bookId: number): Promise<Chapter[]> {
+  async findAllByAuthor(user: User, slug: string): Promise<Chapter[]> {
     const chapters = await this.chaptersRepository.find({
       where: {
         book: {
-          bookId,
+          slug,
           user: {
             userId: user.userId,
           },

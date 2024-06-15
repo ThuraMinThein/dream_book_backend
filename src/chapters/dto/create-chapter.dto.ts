@@ -24,7 +24,7 @@ export class CreateChapterDto {
   @IsOptional()
   status: Status;
 
-  @IsNumber()
+  @IsString()
   @IsNotEmpty()
-  bookId: number;
+  slug: string;
 }

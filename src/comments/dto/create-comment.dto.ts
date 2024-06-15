@@ -6,6 +6,6 @@ export class CreateCommentDto {
   comment: string;
 
   @IsNotEmpty()
-  @IsNumber()
-  bookId: number;
+  @IsString()
+  slug: string;
 }
