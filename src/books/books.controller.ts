@@ -77,6 +77,7 @@ export class BooksController {
     try {
       return this.booksService.getRecommendedBookByUser(options, req.user);
     } catch (error) {
+      console.log(error);
       throw new InternalServerErrorException(
         'Error while fetching recommended books',
       );
@@ -151,7 +152,7 @@ export class BooksController {
       limit,
     };
     try {
-      return await this.booksService.findAll(
+      return this.booksService.findAll(
         options,
         search,
         sortBy,
