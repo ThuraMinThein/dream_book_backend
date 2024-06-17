@@ -1,13 +1,11 @@
 import { Transform } from 'class-transformer';
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsEmpty, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class CreateCategoryDto {
   @IsString()
   @IsNotEmpty()
   title: string;
 
-  @IsNumber()
-  @IsNotEmpty()
-  @Transform(({ obj, key }) => parseInt(obj[key]))
+  @IsEmpty({ message: 'Priority is not allowed to set' })
   priority: number;
 }

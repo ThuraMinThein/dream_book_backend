@@ -46,11 +46,12 @@ export class CategoriesService {
     return this.categoriesRepository.save(newCategory);
   }
 
-  async findAll(): Promise<Category[]> {
+  async findAll(limit: number): Promise<Category[]> {
     const categories = await this.categoriesRepository.find({
       order: {
         priority: 'DESC',
       },
+      ...(limit && { take: limit }),
     });
     if (categories.length === 0) {
       throw new NotFoundException('No categories found');
@@ -113,5 +114,25 @@ export class CategoriesService {
 
   async findOneWithTitle(title: string): Promise<Category> {
     return this.categoriesRepository.findOneBy({ title });
+  }
+
+  async increasePriority(categoryId: number) {
+    const category = await this.findOne(categoryId);
+    const newPriority = category.priority + 1;
+    const increasedFavorite = this.categoriesRepository.create({
+      ...category,
+      priority: newPriority,
+    });
+    await this.categoriesRepository.save(increasedFavorite);
+  }
+
+  async decreasePriority(categoryId: number) {
+    const category = await this.findOne(categoryId);
+    const newPriority = category.priority - 1;
+    const increasedFavorite = this.categoriesRepository.create({
+      ...category,
+      priority: newPriority,
+    });
+    await this.categoriesRepository.save(increasedFavorite);
   }
 }

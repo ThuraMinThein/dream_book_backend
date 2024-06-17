@@ -4,12 +4,14 @@ import {
   Body,
   Patch,
   Param,
+  Query,
   Delete,
   UseFilters,
   Controller,
   UploadedFile,
   ParseIntPipe,
   UseInterceptors,
+  DefaultValuePipe,
   BadRequestException,
   InternalServerErrorException,
 } from '@nestjs/common';
@@ -43,9 +45,11 @@ export class CategoriesController {
   }
 
   @Get()
-  async findAll(): Promise<Category[]> {
+  async findAll(
+    @Query('limit', new DefaultValuePipe(0), ParseIntPipe) limit: any,
+  ): Promise<Category[]> {
     try {
-      return this.categoriesService.findAll();
+      return this.categoriesService.findAll(limit);
     } catch (error) {
       throw new InternalServerErrorException('Error while fetching categories');
     }

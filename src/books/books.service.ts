@@ -17,8 +17,8 @@ import { SortBy } from '../utils/enums/sortBy.enum';
 import { User } from '../users/entities/user.entity';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
-import { Brackets, Repository, SelectQueryBuilder } from 'typeorm';
 import { Favorite } from '../favorites/entities/favorite.entity';
+import { Brackets, Repository, SelectQueryBuilder } from 'typeorm';
 import { CategoriesService } from '../categories/categories.service';
 import { CloudinaryService } from '../common/services/cloudinary/cloudinary.service';
 import { InterestedCategoriesService } from '../interested-categories/interested-categories.service';
@@ -45,7 +45,7 @@ export class BooksService {
     const slug = this.createSlug(createBookDto.title, user.userId);
 
     //check if user already has a book with same title
-    const hasSlug = await this.checkDuplicateSlug(slug);
+    await this.checkDuplicateSlug(slug);
 
     //find user entered category exists or not
     const category = await this.categoriesService.findOne(
@@ -70,6 +70,9 @@ export class BooksService {
       category,
       user,
     });
+    //increase selected category's priority
+    await this.categoriesService.increasePriority(category.categoryId);
+
     return this.booksRepository.save(newBook);
   }
 
@@ -345,6 +348,15 @@ export class BooksService {
       coverImage: bookImage,
       ...updateBookDto,
     });
+
+    //if user changed the category, update the category priority
+    if (updateBookDto?.categoryId) {
+      //descrease the priority of the old category
+      await this.categoriesService.decreasePriority(book.category.categoryId);
+      //increase the priority of the new category
+      await this.categoriesService.increasePriority(category.categoryId);
+    }
+
     return this.booksRepository.save(updatedBook);
   }
 
@@ -368,12 +380,15 @@ export class BooksService {
       (await this.cloudinaryService.deleteImage(book.coverImage));
 
     await this.booksRepository.delete(book.bookId);
+
+    //decrease the priority of the category
+    await this.categoriesService.decreasePriority(book.category.categoryId);
     return book;
   }
 
   //functions
 
-  createSlug(title: string, userId: number) {
+  createSlug(title: string, userId: number): string {
     const slug = slugify(title, {
       replacement: '-',
       remove: /[*+~,.()'"!:@]/g,
@@ -464,7 +479,7 @@ export class BooksService {
       ...book,
       favoriteCount,
     });
-    return this.booksRepository.save(increasedFavorite);
+    await this.booksRepository.save(increasedFavorite);
   }
 
   async decreaseFavorite(slug: string) {
@@ -477,7 +492,7 @@ export class BooksService {
       ...book,
       favoriteCount,
     });
-    return this.booksRepository.save(decreasedFavorite);
+    await this.booksRepository.save(decreasedFavorite);
   }
 
   async isFavorite(userId: number, slug: string): Promise<boolean> {
