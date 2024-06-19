@@ -112,11 +112,31 @@ export class ChaptersService {
     updateChapterDto: UpdateChapterDto,
   ): Promise<Chapter> {
     const chapter = await this.findOneByAuthor(user, chapterId);
+
+    //update chapter
     const updatedChapter = this.chaptersRepository.create({
       ...chapter,
       ...updateChapterDto,
     });
-    return this.chaptersRepository.save(updatedChapter);
+    await this.chaptersRepository.save(updatedChapter);
+
+    //check if there is no published chapter and the book is published, then unpublish the book
+    const book = chapter.book;
+    const publishedChapters = await this.chaptersRepository.find({
+      where: {
+        book: {
+          user: {
+            userId: user.userId,
+          },
+          bookId: book.bookId,
+        },
+        status: Status.PUBLISHED,
+      },
+    });
+    if (publishedChapters.length === 0) {
+      await this.booksService.unpublishBook(book.bookId);
+    }
+    return updatedChapter;
   }
 
   async remove(user: User, chapterId: number): Promise<Chapter> {

@@ -4,6 +4,7 @@ import { BooksService } from './books.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from '../users/users.module';
 import { BooksController } from './books.controller';
+import { Chapter } from '../chapters/entities/chapter.entity';
 import { Favorite } from '../favorites/entities/favorite.entity';
 import { CategoriesModule } from '../categories/categories.module';
 import { ParseNumberArrayPipe } from '../common/pipes/parseNumberArrayPipe.pipe';
@@ -12,7 +13,7 @@ import { InterestedCategoriesModule } from '../interested-categories/interested-
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Book, Favorite]),
+    TypeOrmModule.forFeature([Book, Favorite, Chapter]),
     UsersModule,
     CategoriesModule,
     InterestedCategoriesModule,

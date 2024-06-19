@@ -25,10 +25,6 @@ export class CreateBookDto {
   @Transform(({ obj, key }) => JSON.parse(obj[key]))
   keywords: string[];
 
-  @IsEnum(Status)
-  @IsOptional()
-  status: Status;
-
   @IsNotEmpty()
   @IsNumber()
   @Transform(({ obj, key }) => parseInt(obj[key]))

@@ -3,6 +3,7 @@ import {
   IsEmpty,
   IsString,
   MinLength,
+  MaxLength,
   IsNotEmpty,
   IsOptional,
   IsPhoneNumber,
@@ -12,6 +13,7 @@ import { Gender } from '../../utils/enums/gender.enum';
 export class CreateUserDto {
   @IsString()
   @MinLength(3)
+  @MaxLength(25)
   @IsOptional()
   name: string;
 

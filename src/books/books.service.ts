@@ -2,6 +2,7 @@ import {
   Injectable,
   ConflictException,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   paginate,
@@ -22,6 +23,7 @@ import { Brackets, Repository, SelectQueryBuilder } from 'typeorm';
 import { CategoriesService } from '../categories/categories.service';
 import { CloudinaryService } from '../common/services/cloudinary/cloudinary.service';
 import { InterestedCategoriesService } from '../interested-categories/interested-categories.service';
+import { Chapter } from '../chapters/entities/chapter.entity';
 
 @Injectable()
 export class BooksService {
@@ -29,6 +31,7 @@ export class BooksService {
     @InjectRepository(Book) private booksRepository: Repository<Book>,
     @InjectRepository(Favorite)
     private favoritesRepository: Repository<Favorite>,
+    @InjectRepository(Chapter) private chaptersRepository: Repository<Chapter>,
     private cloudinaryService: CloudinaryService,
     private categoriesService: CategoriesService,
     private interestedCategoriesService: InterestedCategoriesService,
@@ -326,6 +329,24 @@ export class BooksService {
       );
     }
 
+    //if user published the book, check if this book has publish chapters, if not can't publish the book
+    if (updateBookDto?.status === Status.PUBLISHED) {
+      const chapters = await this.chaptersRepository.find({
+        where: {
+          book: {
+            slug: bookSlug,
+          },
+          status: Status.PUBLISHED,
+        },
+      });
+
+      if (chapters.length === 0) {
+        throw new BadRequestException(
+          "This book has no published chapters, can't publish the book",
+        );
+      }
+    }
+
     //if the user wants to change the image, replace image in cloudinary with new and old image
     let bookImage = book.coverImage;
     if (newCoverImage) {
@@ -524,5 +545,21 @@ export class BooksService {
       isFavorite = await this.isFavorite(user.userId, book.slug);
       book.isFavorite = isFavorite;
     }
+  }
+
+  async unpublishBook(bookId: number) {
+    const book = await this.booksRepository.findOne({
+      where: {
+        bookId,
+      },
+    });
+    if (!book) {
+      throw new NotFoundException('Book not found');
+    }
+    if (book.status === Status.DRAFT) {
+      return;
+    }
+    book.status = Status.DRAFT;
+    await this.booksRepository.save(book);
   }
 }
