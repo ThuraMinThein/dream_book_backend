@@ -122,17 +122,11 @@ export class ChaptersService {
 
     //check if there is no published chapter and the book is published, then unpublish the book
     const book = chapter.book;
-    const publishedChapters = await this.chaptersRepository.find({
-      where: {
-        book: {
-          user: {
-            userId: user.userId,
-          },
-          bookId: book.bookId,
-        },
-        status: Status.PUBLISHED,
-      },
-    });
+    const publishedChapters = await this.getpublishedChaptersByAuthor(
+      user.userId,
+      book.bookId,
+    );
+
     if (publishedChapters.length === 0) {
       await this.booksService.unpublishBook(book.bookId);
     }
@@ -146,4 +140,22 @@ export class ChaptersService {
   }
 
   //functions
+
+  async getpublishedChaptersByAuthor(
+    userId: number,
+    bookId: number,
+  ): Promise<Chapter[]> {
+    const publishedChapters = await this.chaptersRepository.find({
+      where: {
+        book: {
+          user: {
+            userId,
+          },
+          bookId,
+        },
+        status: Status.PUBLISHED,
+      },
+    });
+    return publishedChapters;
+  }
 }
