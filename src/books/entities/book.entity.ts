@@ -82,6 +82,9 @@ export class Book {
   @DeleteDateColumn({ name: 'deleted_at' })
   deletedAt: Date;
 
+  @Column({ name: 'deleted_expired_date', nullable: true, default: null })
+  deletedExpiredDate: Date;
+
   //relationships
   //many books can be created by a user
   @ManyToOne(() => User, (user) => user.books, {

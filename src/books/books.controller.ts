@@ -229,9 +229,18 @@ export class BooksController {
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({ groups: [GROUP_USER] })
-  async getAllDeletedBooks(@Request() req: CustomRequest): Promise<Book[]> {
+  async getAllDeletedBooks(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(12), ParseIntPipe) limit: number,
+    @Request() req: CustomRequest,
+  ): Promise<{ paginated: Pagination<Book>; expiredIn: number }> {
+    const options: IPaginationOptions = {
+      page,
+      limit,
+    };
+
     try {
-      return this.booksService.getAllSoftDeletedBooks(req.user);
+      return this.booksService.getAllSoftDeletedBooks(req.user, options);
     } catch (error) {
       throw new InternalServerErrorException(
         'Error while fetching all deleted books',

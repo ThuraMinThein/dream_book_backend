@@ -15,6 +15,7 @@ import { Book } from './entities/book.entity';
 import { OnEvent } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../users/entities/user.entity';
+import { addDays, differenceInDays } from 'date-fns';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { SortBy } from '../common/utils/enums/sortBy.enum';
@@ -384,15 +385,58 @@ export class BooksService {
     return this.booksRepository.save(updatedBook);
   }
 
+  async getAllSoftDeletedBooks(
+    user: User,
+    options: IPaginationOptions,
+  ): Promise<{ paginated: Pagination<Book>; expiredIn: number }> {
+    const qb = this.booksRepository
+      .createQueryBuilder('books')
+      .withDeleted()
+      .leftJoinAndSelect(`books.user`, 'user')
+      .leftJoinAndSelect(`books.category`, 'category')
+      .where('user.userId =:userId', { userId: user.userId })
+      .andWhere('books.deleted_at IS NOT NULL ');
+
+    const paginatedBooks = await paginate<Book>(qb, options);
+    const deletedBooks = paginatedBooks.items;
+    if (deletedBooks.length === 0)
+      throw new NotFoundException("You haven't deleted any books");
+
+    let expiredIn: number;
+    deletedBooks.forEach(async (book) => {
+      const deletedDate = book.deletedAt.toLocaleString();
+      const deletedExpiredDate = book.deletedExpiredDate.toLocaleString();
+      expiredIn = differenceInDays(deletedExpiredDate, deletedDate);
+
+      if (expiredIn <= 0) {
+        await this.booksRepository.delete(book.bookId);
+      }
+    });
+
+    return { paginated: paginatedBooks, expiredIn };
+  }
+
   async softDelete(user: User, bookSlug: string): Promise<Book> {
     const book = await this.findOneWithSlugByAuthor(user, bookSlug);
 
+    //set deleted expired date
+    const deletedExpiredDate = this.softDeletedExpiredDate();
+    book.deletedExpiredDate = deletedExpiredDate;
+    await this.booksRepository.save(book);
+
+    //soft delete book
     await this.booksRepository.softDelete(book.bookId);
     return book;
   }
 
   async restore(user: User, bookSlug: string): Promise<Book> {
     const deletedBook = await this.getOneSoftDeletedBook(user, bookSlug);
+
+    //remove deletedExpired date
+    deletedBook.deletedExpiredDate = null;
+    await this.booksRepository.save(deletedBook);
+
+    //restore book
     await this.booksRepository.restore(deletedBook.bookId);
     return deletedBook;
   }
@@ -445,22 +489,6 @@ export class BooksService {
       })
       .leftJoinAndSelect(`books.user`, 'user')
       .leftJoinAndSelect(`books.category`, 'category');
-  }
-
-  async getAllSoftDeletedBooks(user: User): Promise<Book[]> {
-    const deletedBooks = await this.booksRepository
-      .createQueryBuilder('books')
-      .withDeleted()
-      .leftJoinAndSelect(`books.user`, 'user')
-      .leftJoinAndSelect(`books.category`, 'category')
-      .where('user.userId =:userId', { userId: user.userId })
-      .andWhere('books.deleted_at IS NOT NULL ')
-      .getMany();
-
-    if (deletedBooks.length === 0)
-      throw new NotFoundException("You haven't deleted any books");
-
-    return deletedBooks;
   }
 
   async getOneSoftDeletedBook(user: User, slug: string): Promise<Book> {
@@ -527,8 +555,15 @@ export class BooksService {
     }
   }
 
+  softDeletedExpiredDate() {
+    const today = new Date();
+    const expiredDate = addDays(today, 30);
+    return expiredDate;
+  }
+
   //events
-  @OnEvent(events.FAVORITE_CREATED)
+
+  @OnEvent(events.FAVORITE_CREATED, { async: true })
   async increaseFavorite(payload: BookIdEvent) {
     const { bookId } = payload;
     const book = await this.booksRepository.findOne({ where: { bookId } });
@@ -540,7 +575,7 @@ export class BooksService {
     await this.booksRepository.save(increasedFavorite);
   }
 
-  @OnEvent(events.FAVORITE_DELETED)
+  @OnEvent(events.FAVORITE_DELETED, { async: true })
   async decreaseFavorite(payload: BookIdEvent) {
     const { bookId } = payload;
     const book = await this.booksRepository.findOne({ where: { bookId } });
@@ -555,7 +590,7 @@ export class BooksService {
     await this.booksRepository.save(decreasedFavorite);
   }
 
-  @OnEvent(events.BOOK_STATUS_CHANGED)
+  @OnEvent(events.BOOK_STATUS_CHANGED, { async: true })
   async unpublishBook(payload: BookIdEvent) {
     const { bookId } = payload;
     const book = await this.booksRepository.findOne({
