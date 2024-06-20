@@ -8,7 +8,7 @@ import {
   ConflictException,
   BadRequestException,
 } from '@nestjs/common';
-import { CountryCodeArray } from '../utils/constants/countryCode';
+import { CountryCodeArray } from '../common/utils/constants/countryCode';
 import { CloudinaryService } from '../common/services/cloudinary/cloudinary.service';
 
 @Injectable()

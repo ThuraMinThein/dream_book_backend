@@ -1,4 +1,4 @@
-import { ModeEnum } from '../utils/enums/mode.enum';
+import { ModeEnum } from '../common/utils/enums/mode.enum';
 import { User } from '../users/entities/user.entity';
 import { Book } from '../books/entities/book.entity';
 import { Chapter } from '../chapters/entities/chapter.entity';

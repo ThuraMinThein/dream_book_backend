@@ -15,7 +15,7 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { Progress } from './entities/chapter-progress.entity';
-import { GROUP_USER } from '../utils/serializers/group.serializer';
+import { GROUP_USER } from '../common/utils/serializers/group.serializer';
 import { ChapterProgressService } from './chapter-progress.service';
 import { CreateChapterProgressDto } from './dto/create-chapter-progress.dto';
 import { UpdateChapterProgressDto } from './dto/update-chapter-progress.dto';

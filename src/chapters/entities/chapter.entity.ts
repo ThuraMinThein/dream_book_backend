@@ -9,7 +9,7 @@ import {
   UpdateDateColumn,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Status } from '../../utils/enums/status.enum';
+import { Status } from '../../common/utils/enums/status.enum';
 import { Book } from '../../books/entities/book.entity';
 import { Progress } from '../../chapter-progress/entities/chapter-progress.entity';
 

@@ -8,7 +8,7 @@ import {
   IsOptional,
   IsPhoneNumber,
 } from 'class-validator';
-import { Gender } from '../../utils/enums/gender.enum';
+import { Gender } from '../../common/utils/enums/gender.enum';
 
 export class CreateUserDto {
   @IsString()

@@ -7,7 +7,6 @@ import {
   UseGuards,
   UseFilters,
   Controller,
-  ParseIntPipe,
   UseInterceptors,
   SerializeOptions,
   ClassSerializerInterceptor,
@@ -17,7 +16,7 @@ import { Favorite } from './entities/favorite.entity';
 import { FavoritesService } from './favorites.service';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
-import { GROUP_USER } from '../utils/serializers/group.serializer';
+import { GROUP_USER } from '../common/utils/serializers/group.serializer';
 import { CustomRequest } from '../common/interfaces/custom-request.interface';
 import { TypeormExceptionFilter } from '../common/filters/exceptionfilters/typeorm-exception.filter';
 

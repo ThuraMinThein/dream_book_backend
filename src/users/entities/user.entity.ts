@@ -7,11 +7,11 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Expose } from 'class-transformer';
-import { Gender } from '../../utils/enums/gender.enum';
+import { Gender } from '../../common/utils/enums/gender.enum';
 import { Book } from '../../books/entities/book.entity';
 import { Comment } from '../../comments/entities/comment.entity';
 import { Favorite } from '../../favorites/entities/favorite.entity';
-import { GROUP_ADMIN } from '../../utils/serializers/group.serializer';
+import { GROUP_ADMIN } from '../../common/utils/serializers/group.serializer';
 import { Progress } from '../../chapter-progress/entities/chapter-progress.entity';
 import { InterestedCategory } from '../../interested-categories/entities/interested-category.entity';
 

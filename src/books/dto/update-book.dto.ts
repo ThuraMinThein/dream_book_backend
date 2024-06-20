@@ -1,7 +1,7 @@
 import { IsEnum, IsOptional } from 'class-validator';
 import { CreateBookDto } from './create-book.dto';
 import { PartialType } from '@nestjs/mapped-types';
-import { Status } from '../../utils/enums/status.enum';
+import { Status } from '../../common/utils/enums/status.enum';
 
 export class UpdateBookDto extends PartialType(CreateBookDto) {
   @IsEnum(Status)

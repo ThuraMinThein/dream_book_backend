@@ -3,8 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../users/entities/user.entity';
 import { BooksService } from '../books/books.service';
 import { Favorite } from './entities/favorite.entity';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { events } from '../common/utils/constants/event.constant';
 
 @Injectable()
 export class FavoritesService {
@@ -12,6 +14,7 @@ export class FavoritesService {
     @InjectRepository(Favorite)
     private favoritesRepository: Repository<Favorite>,
     private booksService: BooksService,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   //services
@@ -22,11 +25,12 @@ export class FavoritesService {
     const { slug } = createFavoriteDto;
     //check if book exists
     const book = await this.booksService.findOneWithSlug(slug);
+    const { bookId } = book;
 
     //check if the user already set the book to favorite
     const isUserSetFavorite = await this.findOneWithUserIdAndBookId(
       user.userId,
-      slug,
+      bookId,
     );
     if (isUserSetFavorite) return;
 
@@ -35,7 +39,9 @@ export class FavoritesService {
       book,
     });
     //plus one favorite in book
-    await this.booksService.increaseFavorite(slug);
+    this.eventEmitter.emit(events.FAVORITE_CREATED, {
+      bookId,
+    });
     return this.favoritesRepository.save(favorite);
   }
 
@@ -57,11 +63,11 @@ export class FavoritesService {
     return favorites;
   }
 
-  async findOneWithUserIdAndBookId(userId: number, slug: string) {
+  async findOneWithUserIdAndBookId(userId: number, bookId: number) {
     const favorite = await this.favoritesRepository.findOne({
       where: {
         userId,
-        book: { slug },
+        bookId,
       },
       relations: {
         user: true,
@@ -77,14 +83,16 @@ export class FavoritesService {
     //find book with slug and get bookId
     const bookId = (await this.booksService.findOneWithSlug(slug)).bookId;
 
-    const favorite = await this.findOneWithUserIdAndBookId(userId, slug);
+    const favorite = await this.findOneWithUserIdAndBookId(userId, bookId);
     if (!favorite) throw new NotFoundException('Favorite not found to delete');
     await this.favoritesRepository.delete({
       userId,
       bookId,
     });
     //minus one favorite in book
-    await this.booksService.decreaseFavorite(slug);
+    this.eventEmitter.emit(events.FAVORITE_DELETED, {
+      bookId,
+    });
 
     return favorite;
   }

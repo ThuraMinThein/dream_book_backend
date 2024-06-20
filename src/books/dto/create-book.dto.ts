@@ -8,7 +8,7 @@ import {
   ArrayMinSize,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { Status } from '../../utils/enums/status.enum';
+import { Status } from '../../common/utils/enums/status.enum';
 
 export class CreateBookDto {
   @IsString()

@@ -21,15 +21,15 @@ import {
 } from '@nestjs/common';
 import { Book } from './entities/book.entity';
 import { BooksService } from './books.service';
-import { SortBy } from '../utils/enums/sortBy.enum';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { SortBy } from '../common/utils/enums/sortBy.enum';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
-import { GROUP_USER } from '../utils/serializers/group.serializer';
 import { JwtOptionalGuard } from '../auth/guard/jwt-optional.guard';
 import { ParseNumberPipe } from '../common/pipes/parseNumberPipe.pipe';
 import { IPaginationOptions, Pagination } from 'nestjs-typeorm-paginate';
+import { GROUP_USER } from '../common/utils/serializers/group.serializer';
 import { CustomRequest } from '../common/interfaces/custom-request.interface';
 import { ParseNumberArrayPipe } from '../common/pipes/parseNumberArrayPipe.pipe';
 import { TypeormExceptionFilter } from '../common/filters/exceptionfilters/typeorm-exception.filter';

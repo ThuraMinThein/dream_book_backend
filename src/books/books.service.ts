@@ -12,18 +12,21 @@ import {
 } from 'nestjs-typeorm-paginate';
 import slugify from 'slugify';
 import { Book } from './entities/book.entity';
+import { OnEvent } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Status } from '../utils/enums/status.enum';
-import { SortBy } from '../utils/enums/sortBy.enum';
 import { User } from '../users/entities/user.entity';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
+import { SortBy } from '../common/utils/enums/sortBy.enum';
+import { Status } from '../common/utils/enums/status.enum';
+import { Chapter } from '../chapters/entities/chapter.entity';
 import { Favorite } from '../favorites/entities/favorite.entity';
+import { BookIdEvent } from '../common/utils/events/bookId.event';
+import { events } from '../common/utils/constants/event.constant';
 import { Brackets, Repository, SelectQueryBuilder } from 'typeorm';
 import { CategoriesService } from '../categories/categories.service';
 import { CloudinaryService } from '../common/services/cloudinary/cloudinary.service';
 import { InterestedCategoriesService } from '../interested-categories/interested-categories.service';
-import { Chapter } from '../chapters/entities/chapter.entity';
 
 @Injectable()
 export class BooksService {
@@ -493,29 +496,6 @@ export class BooksService {
     }
   }
 
-  async increaseFavorite(slug: string) {
-    const book = await this.booksRepository.findOne({ where: { slug } });
-    const favoriteCount = book.favoriteCount + 1;
-    const increasedFavorite = this.booksRepository.create({
-      ...book,
-      favoriteCount,
-    });
-    await this.booksRepository.save(increasedFavorite);
-  }
-
-  async decreaseFavorite(slug: string) {
-    const book = await this.booksRepository.findOne({ where: { slug } });
-    let favoriteCount = book.favoriteCount;
-    if (favoriteCount > 0) {
-      favoriteCount--;
-    }
-    const decreasedFavorite = this.booksRepository.create({
-      ...book,
-      favoriteCount,
-    });
-    await this.booksRepository.save(decreasedFavorite);
-  }
-
   async isFavorite(userId: number, slug: string): Promise<boolean> {
     const favorite = await this.favoritesRepository.findOne({
       where: {
@@ -547,7 +527,37 @@ export class BooksService {
     }
   }
 
-  async unpublishBook(bookId: number) {
+  //events
+  @OnEvent(events.FAVORITE_CREATED)
+  async increaseFavorite(payload: BookIdEvent) {
+    const { bookId } = payload;
+    const book = await this.booksRepository.findOne({ where: { bookId } });
+    const favoriteCount = book.favoriteCount + 1;
+    const increasedFavorite = this.booksRepository.create({
+      ...book,
+      favoriteCount,
+    });
+    await this.booksRepository.save(increasedFavorite);
+  }
+
+  @OnEvent(events.FAVORITE_DELETED)
+  async decreaseFavorite(payload: BookIdEvent) {
+    const { bookId } = payload;
+    const book = await this.booksRepository.findOne({ where: { bookId } });
+    let favoriteCount = book.favoriteCount;
+    if (favoriteCount > 0) {
+      favoriteCount--;
+    }
+    const decreasedFavorite = this.booksRepository.create({
+      ...book,
+      favoriteCount,
+    });
+    await this.booksRepository.save(decreasedFavorite);
+  }
+
+  @OnEvent(events.BOOK_STATUS_CHANGED)
+  async unpublishBook(payload: BookIdEvent) {
+    const { bookId } = payload;
     const book = await this.booksRepository.findOne({
       where: {
         bookId,

@@ -1,18 +1,21 @@
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Status } from '../utils/enums/status.enum';
+import { Status } from '../common/utils/enums/status.enum';
 import { Chapter } from './entities/chapter.entity';
 import { User } from '../users/entities/user.entity';
 import { BooksService } from '../books/books.service';
 import { CreateChapterDto } from './dto/create-chapter.dto';
 import { UpdateChapterDto } from './dto/update-chapter.dto';
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { events } from '../common/utils/constants/event.constant';
 
 @Injectable()
 export class ChaptersService {
   constructor(
     @InjectRepository(Chapter) private chaptersRepository: Repository<Chapter>,
     private booksService: BooksService,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   //services
@@ -121,14 +124,15 @@ export class ChaptersService {
     await this.chaptersRepository.save(updatedChapter);
 
     //check if there is no published chapter and the book is published, then unpublish the book
-    const book = chapter.book;
+    const bookId = chapter.book.bookId;
+
     const publishedChapters = await this.getpublishedChaptersByAuthor(
       user.userId,
-      book.bookId,
+      bookId,
     );
 
     if (publishedChapters.length === 0) {
-      await this.booksService.unpublishBook(book.bookId);
+      this.eventEmitter.emit(events.BOOK_STATUS_CHANGED, { bookId });
     }
     return updatedChapter;
   }

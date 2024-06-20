@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { AppController } from './app.controller';
 import { UsersModule } from './users/users.module';
 import { BooksModule } from './books/books.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ChaptersModule } from './chapters/chapters.module';
 import { CommentsModule } from './comments/comments.module';
 import { FavoritesModule } from './favorites/favorites.module';
@@ -18,6 +19,7 @@ import { InterestedCategoriesModule } from './interested-categories/interested-c
 
 @Module({
   imports: [
+    EventEmitterModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
     }),

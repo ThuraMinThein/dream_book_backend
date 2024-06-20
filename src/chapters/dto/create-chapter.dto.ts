@@ -5,7 +5,7 @@ import {
   IsOptional,
   IsNotEmpty,
 } from 'class-validator';
-import { Status } from '../../utils/enums/status.enum';
+import { Status } from '../../common/utils/enums/status.enum';
 
 export class CreateChapterDto {
   @IsString()

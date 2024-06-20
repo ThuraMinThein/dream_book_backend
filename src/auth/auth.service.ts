@@ -8,7 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { UserSerializer } from '../utils/serializers/user.serializer';
+import { UserSerializer } from '../common/utils/serializers/user.serializer';
 
 @Injectable()
 export class AuthService {

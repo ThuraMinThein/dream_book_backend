@@ -15,7 +15,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
-import { GROUP_USER } from '../utils/serializers/group.serializer';
+import { GROUP_USER } from '../common/utils/serializers/group.serializer';
 import { InterestedCategory } from './entities/interested-category.entity';
 import { InterestedCategoriesService } from './interested-categories.service';
 import { CustomRequest } from '../common/interfaces/custom-request.interface';
