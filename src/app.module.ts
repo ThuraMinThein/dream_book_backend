@@ -6,6 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { AppController } from './app.controller';
+import { ScheduleModule } from '@nestjs/schedule';
 import { UsersModule } from './users/users.module';
 import { BooksModule } from './books/books.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
@@ -19,6 +20,7 @@ import { InterestedCategoriesModule } from './interested-categories/interested-c
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     EventEmitterModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,

@@ -233,7 +233,7 @@ export class BooksController {
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(12), ParseIntPipe) limit: number,
     @Request() req: CustomRequest,
-  ): Promise<{ paginated: Pagination<Book>; expiredIn: number }> {
+  ): Promise<Pagination<Book>> {
     const options: IPaginationOptions = {
       page,
       limit,

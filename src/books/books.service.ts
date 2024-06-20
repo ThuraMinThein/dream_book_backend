@@ -3,6 +3,7 @@ import {
   ConflictException,
   NotFoundException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import {
   paginate,
@@ -18,14 +19,15 @@ import { User } from '../users/entities/user.entity';
 import { addDays, differenceInDays } from 'date-fns';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { SortBy } from '../common/utils/enums/sortBy.enum';
 import { Status } from '../common/utils/enums/status.enum';
 import { Chapter } from '../chapters/entities/chapter.entity';
 import { Favorite } from '../favorites/entities/favorite.entity';
 import { BookIdEvent } from '../common/utils/events/bookId.event';
 import { events } from '../common/utils/constants/event.constant';
-import { Brackets, Repository, SelectQueryBuilder } from 'typeorm';
 import { CategoriesService } from '../categories/categories.service';
+import { Brackets, LessThan, Repository, SelectQueryBuilder } from 'typeorm';
 import { CloudinaryService } from '../common/services/cloudinary/cloudinary.service';
 import { InterestedCategoriesService } from '../interested-categories/interested-categories.service';
 
@@ -388,7 +390,7 @@ export class BooksService {
   async getAllSoftDeletedBooks(
     user: User,
     options: IPaginationOptions,
-  ): Promise<{ paginated: Pagination<Book>; expiredIn: number }> {
+  ): Promise<Pagination<Book>> {
     const qb = this.booksRepository
       .createQueryBuilder('books')
       .withDeleted()
@@ -402,18 +404,7 @@ export class BooksService {
     if (deletedBooks.length === 0)
       throw new NotFoundException("You haven't deleted any books");
 
-    let expiredIn: number;
-    deletedBooks.forEach(async (book) => {
-      const deletedDate = book.deletedAt.toLocaleString();
-      const deletedExpiredDate = book.deletedExpiredDate.toLocaleString();
-      expiredIn = differenceInDays(deletedExpiredDate, deletedDate);
-
-      if (expiredIn <= 0) {
-        await this.booksRepository.delete(book.bookId);
-      }
-    });
-
-    return { paginated: paginatedBooks, expiredIn };
+    return paginatedBooks;
   }
 
   async softDelete(user: User, bookSlug: string): Promise<Book> {
@@ -422,18 +413,27 @@ export class BooksService {
     //set deleted expired date
     const deletedExpiredDate = this.softDeletedExpiredDate();
     book.deletedExpiredDate = deletedExpiredDate;
+    //set deleted expired day
+    const expireDayLeft = differenceInDays(
+      deletedExpiredDate,
+      new Date().toLocaleString(),
+    );
+    book.expireDayLeft = expireDayLeft;
+    //unpublish the book
+    book.status = Status.DRAFT;
     await this.booksRepository.save(book);
 
     //soft delete book
     await this.booksRepository.softDelete(book.bookId);
-    return book;
+    return { ...book, expireDayLeft };
   }
 
   async restore(user: User, bookSlug: string): Promise<Book> {
     const deletedBook = await this.getOneSoftDeletedBook(user, bookSlug);
 
-    //remove deletedExpired date
+    //remove deletedExpired date and deletedExpiredIn
     deletedBook.deletedExpiredDate = null;
+    deletedBook.expireDayLeft = null;
     await this.booksRepository.save(deletedBook);
 
     //restore book
@@ -503,7 +503,7 @@ export class BooksService {
       .getOne();
 
     if (!deletedBook)
-      throw new NotFoundException('No book is deleted witht this title');
+      throw new NotFoundException('No book is deleted with this title');
     return deletedBook;
   }
 
@@ -606,5 +606,42 @@ export class BooksService {
     }
     book.status = Status.DRAFT;
     await this.booksRepository.save(book);
+  }
+
+  //cron
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async deleteExpiredBooks() {
+    try {
+      const today = new Date();
+      const result = await this.booksRepository.delete({
+        deletedExpiredDate: LessThan(today),
+      });
+      console.log(`${result.affected} books deleted`);
+    } catch (error) {
+      console.error('Error deleting expired deleted books:', error);
+    }
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async updateExpiredDayLeft() {
+    try {
+      const today = new Date();
+      const deletedBooks = await this.booksRepository
+        .createQueryBuilder('books')
+        .withDeleted()
+        .leftJoinAndSelect(`books.user`, 'user')
+        .leftJoinAndSelect(`books.category`, 'category')
+        .andWhere('books.deleted_at IS NOT NULL ')
+        .getMany();
+
+      deletedBooks.forEach(async (book) => {
+        book.expireDayLeft = differenceInDays(book.deletedExpiredDate, today);
+        await this.booksRepository.save(book);
+      });
+      Logger.log('Updated deletedExpiredIn for books');
+    } catch (error) {
+      console.error('Error while updating deletedExpiredIn :', error);
+    }
   }
 }

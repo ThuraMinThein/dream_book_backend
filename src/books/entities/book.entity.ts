@@ -85,6 +85,9 @@ export class Book {
   @Column({ name: 'deleted_expired_date', nullable: true, default: null })
   deletedExpiredDate: Date;
 
+  @Column({ name: 'expire_day_left', nullable: true, default: null })
+  expireDayLeft: number;
+
   //relationships
   //many books can be created by a user
   @ManyToOne(() => User, (user) => user.books, {
