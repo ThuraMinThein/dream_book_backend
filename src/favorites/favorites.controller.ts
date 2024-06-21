@@ -11,11 +11,15 @@ import {
   SerializeOptions,
   ClassSerializerInterceptor,
   InternalServerErrorException,
+  Query,
+  DefaultValuePipe,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { Favorite } from './entities/favorite.entity';
 import { FavoritesService } from './favorites.service';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
+import { IPaginationOptions, Pagination } from 'nestjs-typeorm-paginate';
 import { GROUP_USER } from '../common/utils/serializers/group.serializer';
 import { CustomRequest } from '../common/interfaces/custom-request.interface';
 import { TypeormExceptionFilter } from '../common/filters/exceptionfilters/typeorm-exception.filter';
@@ -49,9 +53,15 @@ export class FavoritesController {
   @SerializeOptions({ groups: [GROUP_USER] })
   async getAllFavoriteByUser(
     @Request() req: CustomRequest,
-  ): Promise<Favorite[]> {
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(12), ParseIntPipe) limit: number,
+  ): Promise<Pagination<Favorite>> {
+    const options: IPaginationOptions = {
+      page,
+      limit,
+    };
     try {
-      return this.favoritesService.getAllFavoriteByUser(req.user);
+      return this.favoritesService.getAllFavoriteByUser(req.user, options);
     } catch (error) {
       throw new InternalServerErrorException('Error while fetching favorites');
     }

@@ -1,3 +1,8 @@
+import {
+  paginate,
+  Pagination,
+  IPaginationOptions,
+} from 'nestjs-typeorm-paginate';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../users/entities/user.entity';
@@ -46,22 +51,32 @@ export class FavoritesService {
     return this.favoritesRepository.save(favorite);
   }
 
-  async getAllFavoriteByUser(user: User): Promise<Favorite[]> {
-    const favorites = await this.favoritesRepository.find({
-      where: {
-        userId: user.userId,
-      },
-      relations: {
-        user: true,
-        book: {
-          user: true,
-          category: true,
-        },
-      },
-    });
-    if (favorites.length === 0)
+  async getAllFavoriteByUser(
+    user: User,
+    options: IPaginationOptions,
+  ): Promise<Pagination<Favorite>> {
+    const { userId } = user;
+
+    const qb = this.favoritesRepository
+      .createQueryBuilder('favorite')
+      .where('favorite.userId = :userId', { userId })
+      .innerJoinAndSelect('favorite.book', 'book')
+      .innerJoinAndSelect('favorite.user', 'bookUser')
+      .innerJoinAndSelect('book.user', 'user')
+      .innerJoinAndSelect('book.category', 'category');
+
+    const paginated = await paginate<Favorite>(qb, options);
+    const favoritesBooks = paginated.items;
+    if (favoritesBooks.length === 0)
       throw new NotFoundException("You don't have any favorite books yet");
-    return favorites;
+
+    //set favorite to true
+    favoritesBooks.forEach(async (fav) => {
+      const { book } = fav;
+      book.isFavorite = true;
+    });
+
+    return paginated;
   }
 
   async findOneWithUserIdAndBookId(userId: number, bookId: number) {
