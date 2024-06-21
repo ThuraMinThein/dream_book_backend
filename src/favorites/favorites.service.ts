@@ -38,6 +38,7 @@ export class FavoritesService {
       user,
       book,
     });
+    favorite.book.isFavorite = true;
     //plus one favorite in book
     this.eventEmitter.emit(events.FAVORITE_CREATED, {
       bookId,
