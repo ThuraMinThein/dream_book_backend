@@ -2,18 +2,18 @@ import {
   Get,
   Post,
   Body,
+  Query,
   Delete,
   Request,
   UseGuards,
   UseFilters,
   Controller,
+  ParseIntPipe,
   UseInterceptors,
   SerializeOptions,
+  DefaultValuePipe,
   ClassSerializerInterceptor,
   InternalServerErrorException,
-  Query,
-  DefaultValuePipe,
-  ParseIntPipe,
 } from '@nestjs/common';
 import { Favorite } from './entities/favorite.entity';
 import { FavoritesService } from './favorites.service';

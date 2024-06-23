@@ -33,6 +33,7 @@ import { GROUP_USER } from '../common/utils/serializers/group.serializer';
 import { CustomRequest } from '../common/interfaces/custom-request.interface';
 import { ParseNumberArrayPipe } from '../common/pipes/parseNumberArrayPipe.pipe';
 import { TypeormExceptionFilter } from '../common/filters/exceptionfilters/typeorm-exception.filter';
+import { SkipThrottle } from '@nestjs/throttler';
 
 @Controller({
   path: 'books',
@@ -135,6 +136,7 @@ export class BooksController {
 
   //get books from all users
   @Get('public')
+  @SkipThrottle()
   @UseGuards(JwtOptionalGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({ groups: [GROUP_USER] })

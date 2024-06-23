@@ -28,7 +28,7 @@ import { InterestedCategoriesModule } from './interested-categories/interested-c
     ThrottlerModule.forRoot([
       {
         ttl: 10000,
-        limit: 5,
+        limit: 10,
       },
     ]),
     TypeOrmModule.forRoot(config),
