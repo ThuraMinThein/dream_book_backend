@@ -14,9 +14,6 @@ export class Progress {
   @PrimaryGeneratedColumn({ name: 'progress_id' })
   progressId: number;
 
-  @Column()
-  progress: number;
-
   @Column({ name: 'user_id' })
   userId: number;
 
