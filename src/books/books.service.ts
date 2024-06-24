@@ -18,7 +18,6 @@ import { User } from '../users/entities/user.entity';
 import { addDays, differenceInDays } from 'date-fns';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
-import { Cron, CronExpression } from '@nestjs/schedule';
 import { SortBy } from '../common/utils/enums/sortBy.enum';
 import { Status } from '../common/utils/enums/status.enum';
 import { Chapter } from '../chapters/entities/chapter.entity';
@@ -393,19 +392,19 @@ export class BooksService {
     const { userId } = user;
     //get all deleted books and check if the deleted date is expired, then hard delte those books
     const deletedBooks = await this.deletedBooks(userId).getMany();
-
-    for (const book of deletedBooks) {
+    const checkedBooks = deletedBooks.map(async (book) => {
       const dayLeft = differenceInDays(book.deletedExpiredDate, new Date()) + 1;
 
       //if the deleted date is expired, hard delete the book
       if (dayLeft <= 0) {
-        await this.remove(user, book.slug);
+        return this.remove(user, book.slug);
       } else {
-        //if the deleted date is not expired, update the deleted expired date and day left
+        //if the deleted date is not expired, update the deleted expired day left
         book.expireDayLeft = dayLeft;
-        await this.booksRepository.save(book);
+        return this.booksRepository.save(book);
       }
-    }
+    });
+    await Promise.all(checkedBooks);
 
     //get all updated soft deleted books
     const qb = this.deletedBooks(userId);

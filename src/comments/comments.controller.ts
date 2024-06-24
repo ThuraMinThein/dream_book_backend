@@ -13,6 +13,7 @@ import {
   ParseIntPipe,
   BadRequestException,
   InternalServerErrorException,
+  DefaultValuePipe,
 } from '@nestjs/common';
 import { Comment } from './entities/comment.entity';
 import { CommentsService } from './comments.service';
@@ -21,6 +22,7 @@ import { UpdateCommentDto } from './dto/update-comment.dto';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { CustomRequest } from '../common/interfaces/custom-request.interface';
 import { TypeormExceptionFilter } from '../common/filters/exceptionfilters/typeorm-exception.filter';
+import { Pagination } from 'nestjs-typeorm-paginate';
 
 @Controller({
   path: 'comments',
@@ -44,11 +46,20 @@ export class CommentsController {
   }
 
   @Get()
-  async findAll(@Query('slug') slug: string): Promise<Comment[]> {
+  async findAll(
+    @Query('slug') slug: string,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  ): Promise<Pagination<Comment>> {
     if (!slug)
-      throw new BadRequestException('You must add book id as query param');
+      throw new BadRequestException('You must add book slug as query param');
+
+    const options = {
+      page,
+      limit,
+    };
     try {
-      return this.commentsService.findAll(slug);
+      return this.commentsService.findAll(slug, options);
     } catch (error) {
       throw new InternalServerErrorException('Error while fetching comments');
     }

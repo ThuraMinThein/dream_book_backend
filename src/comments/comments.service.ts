@@ -1,3 +1,8 @@
+import {
+  paginate,
+  Pagination,
+  IPaginationOptions,
+} from 'nestjs-typeorm-paginate';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Comment } from './entities/comment.entity';
@@ -33,24 +38,23 @@ export class CommentsService {
     return this.commentsRepository.save(newComment);
   }
 
-  async findAll(slug: string): Promise<Comment[]> {
+  async findAll(
+    slug: string,
+    options: IPaginationOptions,
+  ): Promise<Pagination<Comment>> {
     //check if book exists
     await this.booksService.findOneWithSlug(slug);
 
-    const comments = await this.commentsRepository.find({
-      where: {
-        book: {
-          slug,
-        },
-      },
-      relations: {
-        user: true,
-        book: true,
-      },
-    });
-    if (comments.length === 0)
+    const qb = this.commentsRepository
+      .createQueryBuilder('comment')
+      .leftJoinAndSelect('comment.user', 'user')
+      .leftJoinAndSelect('comment.book', 'book')
+      .where('book.slug = :slug', { slug });
+
+    const paginatedComments = await paginate<Comment>(qb, options);
+    if (paginatedComments.items.length === 0)
       throw new NotFoundException('No comments yet :(');
-    return comments;
+    return paginatedComments;
   }
 
   async findOneByUser(user: User, commentId: number): Promise<Comment> {
