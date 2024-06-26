@@ -12,6 +12,7 @@ import { BooksModule } from './books/books.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ChaptersModule } from './chapters/chapters.module';
 import { CommentsModule } from './comments/comments.module';
+import { HistoryModule } from './book-history/history.module';
 import { FavoritesModule } from './favorites/favorites.module';
 import { CategoriesModule } from './categories/categories.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
@@ -35,6 +36,7 @@ import { InterestedCategoriesModule } from './interested-categories/interested-c
     AuthModule,
     UsersModule,
     BooksModule,
+    HistoryModule,
     ChaptersModule,
     CommentsModule,
     FavoritesModule,

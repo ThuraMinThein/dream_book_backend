@@ -15,6 +15,7 @@ import { Comment } from '../../comments/entities/comment.entity';
 import { Chapter } from '../../chapters/entities/chapter.entity';
 import { Favorite } from '../../favorites/entities/favorite.entity';
 import { Category } from '../../categories/entities/category.entity';
+import { History } from '../../book-history/entities/history.entity';
 import { Progress } from '../../chapter-progress/entities/chapter-progress.entity';
 
 @Entity('books')
@@ -118,4 +119,8 @@ export class Book {
   //a book can have many chapter progresses
   @OneToMany(() => Progress, (progresses) => progresses.book)
   progresses: Progress[];
+
+  //a book can have many book histories
+  @OneToMany(() => History, (histories) => histories.book)
+  histories: History[];
 }

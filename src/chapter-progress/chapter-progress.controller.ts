@@ -7,6 +7,7 @@ import {
   Request,
   UseGuards,
   Controller,
+  UseFilters,
   ParseIntPipe,
   UseInterceptors,
   SerializeOptions,
@@ -15,16 +16,18 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { Progress } from './entities/chapter-progress.entity';
-import { GROUP_USER } from '../common/utils/serializers/group.serializer';
 import { ChapterProgressService } from './chapter-progress.service';
+import { GROUP_USER } from '../common/utils/serializers/group.serializer';
 import { CreateChapterProgressDto } from './dto/create-chapter-progress.dto';
 import { UpdateChapterProgressDto } from './dto/update-chapter-progress.dto';
 import { CustomRequest } from '../common/interfaces/custom-request.interface';
+import { TypeormExceptionFilter } from '../common/filters/exceptionfilters/typeorm-exception.filter';
 
 @Controller({
   path: 'chapter-progress',
   version: '1',
 })
+@UseFilters(TypeormExceptionFilter)
 export class ChapterProgressController {
   constructor(
     private readonly chapterProgressService: ChapterProgressService,

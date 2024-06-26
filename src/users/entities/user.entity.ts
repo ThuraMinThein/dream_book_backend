@@ -7,10 +7,11 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Expose } from 'class-transformer';
-import { Gender } from '../../common/utils/enums/gender.enum';
 import { Book } from '../../books/entities/book.entity';
+import { Gender } from '../../common/utils/enums/gender.enum';
 import { Comment } from '../../comments/entities/comment.entity';
 import { Favorite } from '../../favorites/entities/favorite.entity';
+import { History } from '../../book-history/entities/history.entity';
 import { GROUP_ADMIN } from '../../common/utils/serializers/group.serializer';
 import { Progress } from '../../chapter-progress/entities/chapter-progress.entity';
 import { InterestedCategory } from '../../interested-categories/entities/interested-category.entity';
@@ -113,4 +114,8 @@ export class User {
   //a user can have many chapter progresses
   @OneToMany(() => Progress, (progresses) => progresses.user)
   progresses: Progress[];
+
+  //a user can have many book histories
+  @OneToMany(() => History, (histories) => histories.user)
+  histories: History[];
 }

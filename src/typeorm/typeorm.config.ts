@@ -5,6 +5,7 @@ import { Chapter } from '../chapters/entities/chapter.entity';
 import { Comment } from '../comments/entities/comment.entity';
 import { Favorite } from '../favorites/entities/favorite.entity';
 import { Category } from '../categories/entities/category.entity';
+import { History } from '../book-history/entities/history.entity';
 import { Progress } from '../chapter-progress/entities/chapter-progress.entity';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 import { InterestedCategory } from '../interested-categories/entities/interested-category.entity';
@@ -30,13 +31,14 @@ const config: PostgresConnectionOptions = {
     Book,
     Chapter,
     Comment,
+    History,
     Category,
     Favorite,
     Progress,
     InterestedCategory,
   ],
   ...sslReject,
-  synchronize: true,
+  synchronize: false,
 };
 
 export default config;
