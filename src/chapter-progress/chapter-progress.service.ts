@@ -1,9 +1,13 @@
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../users/entities/user.entity';
 import { BooksService } from '../books/books.service';
 import { Progress } from './entities/chapter-progress.entity';
-import { Injectable, NotFoundException } from '@nestjs/common';
 import { ChaptersService } from '../chapters/chapters.service';
 import { CreateChapterProgressDto } from './dto/create-chapter-progress.dto';
 import { UpdateChapterProgressDto } from './dto/update-chapter-progress.dto';
@@ -26,6 +30,10 @@ export class ChapterProgressService {
     const book = await this.booksService.findOneWithSlug(slug);
     const chapter = await this.ChaptersService.findOne(chapterId);
 
+    //check for duplicate progress
+    const hasProgress = await this.findOneByUser(user.userId, slug);
+    if (hasProgress) throw new ConflictException('duplicate progress');
+
     const progress = this.progressesRepository.create({
       ...createChapterProgressDto,
       user,
@@ -35,41 +43,55 @@ export class ChapterProgressService {
     return this.progressesRepository.save(progress);
   }
 
-  async getCurrentChapter(user: User): Promise<any> {
+  async getCurrentChapter(user: User, slug: string): Promise<any> {
     const { userId } = user;
+    await this.booksService.findOneWithSlug(slug);
     const currentProgress = await this.progressesRepository.findOne({
       where: {
         userId,
+        book: {
+          slug,
+        },
+      },
+      relations: {
+        chapter: true,
+        book: true,
+        user: true,
       },
     });
-    if (!Progress) return 0;
+    if (!currentProgress) throw new NotFoundException('Progress not found');
     return currentProgress;
   }
 
-  async findOneByUser(userId: number, progressId: number): Promise<Progress> {
+  async findOneByUser(userId: number, slug: string): Promise<Progress> {
     const progress = await this.progressesRepository.findOne({
       where: {
-        progressId,
+        book: {
+          slug,
+        },
         user: {
           userId,
         },
       },
     });
-    if (!progress) throw new NotFoundException('Progress not found');
     return progress;
   }
 
   async update(
     user: User,
-    id: number,
+    slug: string,
     updateChapterProgressDto: UpdateChapterProgressDto,
   ): Promise<Progress> {
+    const { chapterId } = updateChapterProgressDto;
+
+    const chapter = await this.ChaptersService.findOne(chapterId);
     //check if progress exists
-    const progress = await this.findOneByUser(user.userId, id);
+    const progress = await this.findOneByUser(user.userId, slug);
+    if (!progress) throw new NotFoundException('Progress not found');
 
     const updatedProgress = this.progressesRepository.create({
       ...progress,
-      ...updateChapterProgressDto,
+      ...chapter,
     });
     return this.progressesRepository.save(updatedProgress);
   }

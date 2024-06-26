@@ -3,14 +3,14 @@ import {
   Post,
   Body,
   Patch,
-  Param,
+  Query,
   Request,
   UseGuards,
   Controller,
   UseFilters,
-  ParseIntPipe,
   UseInterceptors,
   SerializeOptions,
+  NotFoundException,
   ClassSerializerInterceptor,
   InternalServerErrorException,
 } from '@nestjs/common';
@@ -55,9 +55,13 @@ export class ChapterProgressController {
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  async getCurrentChapter(@Request() req: CustomRequest): Promise<any> {
+  async getCurrentChapter(
+    @Request() req: CustomRequest,
+    @Query('slug') slug: string,
+  ): Promise<any> {
+    if (!slug) throw new NotFoundException('Slug must not be empty');
     try {
-      return this.chapterProgressService.getCurrentChapter(req.user);
+      return this.chapterProgressService.getCurrentChapter(req.user, slug);
     } catch (error) {
       throw new InternalServerErrorException(
         'Error while fetching current chapter',
@@ -65,17 +69,18 @@ export class ChapterProgressController {
     }
   }
 
-  @Patch(':id')
+  @Patch()
   @UseGuards(JwtAuthGuard)
   async update(
     @Request() req: CustomRequest,
-    @Param('id', ParseIntPipe) id: any,
+    @Query('slug') slug: string,
     @Body() updateChapterProgressDto: UpdateChapterProgressDto,
   ): Promise<Progress> {
+    if (!slug) throw new NotFoundException('Slug must not be empty');
     try {
       return this.chapterProgressService.update(
         req.user,
-        id,
+        slug,
         updateChapterProgressDto,
       );
     } catch (error) {

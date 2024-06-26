@@ -49,6 +49,9 @@ export class ChaptersService {
       relations: {
         book: true,
       },
+      order: {
+        cratedAt: 'ASC',
+      },
     });
     if (chapters.length === 0) throw new NotFoundException('No chapter found');
     return chapters;

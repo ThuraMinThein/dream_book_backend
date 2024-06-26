@@ -1,10 +1,8 @@
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { History } from './entities/history.entity';
-import { Book } from '../books/entities/book.entity';
 import { User } from '../users/entities/user.entity';
 import { BooksService } from '../books/books.service';
-import { UpdateHistoryDto } from './dto/update-history.dto';
 import { CreateHistoryDto } from './dto/create-history.dto';
 import { Injectable, NotFoundException } from '@nestjs/common';
 
