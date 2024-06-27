@@ -1,11 +1,12 @@
 import {
   Column,
-  CreateDateColumn,
   Entity,
-  JoinColumn,
   ManyToOne,
-  PrimaryGeneratedColumn,
+  OneToMany,
+  JoinColumn,
+  CreateDateColumn,
   UpdateDateColumn,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Book } from '../../books/entities/book.entity';
@@ -19,6 +20,9 @@ export class Comment {
     type: 'text',
   })
   comment: string;
+
+  // @Column({ name: 'reply_to', nullable: true, default: null })
+  // replyTo: number;
 
   @CreateDateColumn({ name: 'created_at' })
   cratedAt: Date;
@@ -40,4 +44,12 @@ export class Comment {
   })
   @JoinColumn({ name: 'book_id', referencedColumnName: 'bookId' })
   book: Book;
+
+  //reply comment
+  @ManyToOne(() => Comment, (comment) => comment.replies)
+  @JoinColumn({ name: 'parent_comment_id', referencedColumnName: 'commentId' })
+  parentComment: Comment;
+
+  @OneToMany(() => Comment, (comment) => comment.parentComment)
+  replies: Comment[];
 }

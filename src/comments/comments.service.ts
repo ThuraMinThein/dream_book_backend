@@ -23,16 +23,23 @@ export class CommentsService {
     user: User,
     createCommentDto: CreateCommentDto,
   ): Promise<Comment> {
-    const { slug } = createCommentDto;
+    const { slug, parentCommentId } = createCommentDto;
 
     //check if book exists
     const book = await this.booksService.findOneWithSlug(slug);
+
+    //check if new comment is a reply to an existing comment
+    let parentComment: Comment;
+    if (parentCommentId) {
+      parentComment = await this.findOne(parentCommentId);
+    }
 
     //create comment
     const newComment = this.commentsRepository.create({
       ...createCommentDto,
       user,
       book,
+      parentComment,
     });
 
     return this.commentsRepository.save(newComment);
@@ -48,8 +55,14 @@ export class CommentsService {
     const qb = this.commentsRepository
       .createQueryBuilder('comment')
       .leftJoinAndSelect('comment.user', 'user')
-      .leftJoinAndSelect('comment.book', 'book')
-      .where('book.slug = :slug', { slug });
+      .leftJoin('comment.book', 'book')
+      .leftJoinAndSelect('comment.parentComment', 'parentComment')
+      .leftJoinAndSelect('comment.replies', 'replies')
+      .leftJoinAndSelect('replies.user', 'repliesUser')
+      .leftJoinAndSelect('replies.replies', 'subReplies')
+      .leftJoinAndSelect('subReplies.user', 'subRepliesUser')
+      .where('book.slug = :slug', { slug })
+      .andWhere('comment.parentComment IS NULL');
 
     const paginatedComments = await paginate<Comment>(qb, options);
     if (paginatedComments.items.length === 0)
@@ -71,6 +84,20 @@ export class CommentsService {
       },
     });
     if (!comment) throw new NotFoundException('comment not found');
+    return comment;
+  }
+
+  async findOne(commentId: number): Promise<Comment> {
+    const comment = await this.commentsRepository.findOne({
+      where: {
+        commentId,
+      },
+      relations: {
+        user: true,
+        book: true,
+      },
+    });
+    if (!comment) throw new NotFoundException('Parent comment not found');
     return comment;
   }
 

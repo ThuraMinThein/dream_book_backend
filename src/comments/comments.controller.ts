@@ -11,18 +11,18 @@ import {
   UseFilters,
   Controller,
   ParseIntPipe,
+  DefaultValuePipe,
   BadRequestException,
   InternalServerErrorException,
-  DefaultValuePipe,
 } from '@nestjs/common';
 import { Comment } from './entities/comment.entity';
 import { CommentsService } from './comments.service';
+import { Pagination } from 'nestjs-typeorm-paginate';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { CustomRequest } from '../common/interfaces/custom-request.interface';
 import { TypeormExceptionFilter } from '../common/filters/exceptionfilters/typeorm-exception.filter';
-import { Pagination } from 'nestjs-typeorm-paginate';
 
 @Controller({
   path: 'comments',

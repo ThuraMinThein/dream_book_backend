@@ -1,6 +1,6 @@
-import { ModeEnum } from '../common/utils/enums/mode.enum';
 import { User } from '../users/entities/user.entity';
 import { Book } from '../books/entities/book.entity';
+import { ModeEnum } from '../common/utils/enums/mode.enum';
 import { Chapter } from '../chapters/entities/chapter.entity';
 import { Comment } from '../comments/entities/comment.entity';
 import { Favorite } from '../favorites/entities/favorite.entity';
@@ -38,7 +38,7 @@ const config: PostgresConnectionOptions = {
     InterestedCategory,
   ],
   ...sslReject,
-  synchronize: false,
+  synchronize: true,
 };
 
 export default config;
