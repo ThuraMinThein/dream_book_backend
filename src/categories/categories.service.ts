@@ -128,10 +128,13 @@ export class CategoriesService {
 
   async decreasePriority(categoryId: number) {
     const category = await this.findOne(categoryId);
-    const newPriority = category.priority - 1;
+    let priority = category.priority;
+    if (priority > 0) {
+      priority--;
+    }
     const increasedFavorite = this.categoriesRepository.create({
       ...category,
-      priority: newPriority,
+      priority,
     });
     await this.categoriesRepository.save(increasedFavorite);
   }

@@ -1,13 +1,13 @@
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Status } from '../common/utils/enums/status.enum';
 import { Chapter } from './entities/chapter.entity';
 import { User } from '../users/entities/user.entity';
 import { BooksService } from '../books/books.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Status } from '../common/utils/enums/status.enum';
 import { CreateChapterDto } from './dto/create-chapter.dto';
 import { UpdateChapterDto } from './dto/update-chapter.dto';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { events } from '../common/utils/constants/event.constant';
 
 @Injectable()

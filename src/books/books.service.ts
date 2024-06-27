@@ -397,7 +397,7 @@ export class BooksService {
 
       //if the deleted date is expired, hard delete the book
       if (dayLeft <= 0) {
-        return this.remove(user, book.slug);
+        return this.remove(user, Array.of(book.slug));
       } else {
         //if the deleted date is not expired, update the deleted expired day left
         book.expireDayLeft = dayLeft;
@@ -437,30 +437,67 @@ export class BooksService {
     return { ...book, expireDayLeft };
   }
 
-  async restore(user: User, bookSlug: string): Promise<Book> {
-    const deletedBook = await this.getOneSoftDeletedBook(user, bookSlug);
+  async restore(user: User, slugs: string[]): Promise<Book[]> {
+    //check if all slugs actually exist
+    const deletedBooks = await Promise.all(
+      slugs.map(async (slug) => {
+        const book = await this.getOneSoftDeletedBook(user, slug);
 
-    //remove deletedExpired date and deletedExpiredIn
-    deletedBook.deletedExpiredDate = null;
-    deletedBook.expireDayLeft = null;
-    await this.booksRepository.save(deletedBook);
+        if (!book)
+          throw new NotFoundException(
+            `Book not found with this slug: ${slug}. Restoring process cancelled`,
+          );
+        return book;
+      }),
+    );
 
-    //restore book
-    await this.booksRepository.restore(deletedBook.bookId);
-    return deletedBook;
+    //restore books
+    const restoredBooks = await Promise.all(
+      deletedBooks.map(async (book) => {
+        // remove deletedExpired date and deletedExpiredIn
+        book.deletedExpiredDate = null;
+        book.expireDayLeft = null;
+        await this.booksRepository.save(book);
+
+        //restore book
+        await this.booksRepository.restore(book.bookId);
+        return book;
+      }),
+    );
+
+    return restoredBooks;
   }
 
-  async remove(user: User, bookSlug: string): Promise<Book> {
-    const book = await this.getOneSoftDeletedBook(user, bookSlug);
-    //delete image in cloudinary if there is an image
-    book.coverImage &&
-      (await this.cloudinaryService.deleteImage(book.coverImage));
+  async remove(user: User, slugs: string[]): Promise<Book[]> {
+    //check if all slugs actually exist
+    const softDeletedBooks = await Promise.all(
+      slugs.map(async (slug) => {
+        const book = await this.getOneSoftDeletedBook(user, slug);
 
-    await this.booksRepository.delete(book.bookId);
+        if (!book)
+          throw new NotFoundException(
+            `Book not found with this slug: ${slug}. Deleting process cancelled`,
+          );
+        return book;
+      }),
+    );
 
-    //decrease the priority of the category
-    await this.categoriesService.decreasePriority(book.category.categoryId);
-    return book;
+    const hardDeletedBooks = await Promise.all(
+      softDeletedBooks.map(async (book) => {
+        //delete image in cloudinary if there is an image
+        book.coverImage &&
+          (await this.cloudinaryService.deleteImage(book.coverImage));
+
+        await this.booksRepository.delete(book.bookId);
+
+        //decrease the priority of the category
+        await this.categoriesService.decreasePriority(book.category.categoryId);
+
+        return book;
+      }),
+    );
+
+    return hardDeletedBooks;
   }
 
   //functions
@@ -522,8 +559,6 @@ export class BooksService {
       .andWhere('books.deleted_at IS NOT NULL ')
       .getOne();
 
-    if (!deletedBook)
-      throw new NotFoundException('No book is deleted with this title');
     return deletedBook;
   }
 

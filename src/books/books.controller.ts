@@ -27,12 +27,13 @@ import { UpdateBookDto } from './dto/update-book.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { SortBy } from '../common/utils/enums/sortBy.enum';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
+import { ParseNumberPipe } from '../common/pipes/parseNumber.pipe';
 import { JwtOptionalGuard } from '../auth/guard/jwt-optional.guard';
-import { ParseNumberPipe } from '../common/pipes/parseNumberPipe.pipe';
 import { IPaginationOptions, Pagination } from 'nestjs-typeorm-paginate';
 import { GROUP_USER } from '../common/utils/serializers/group.serializer';
+import { ParseStringArrayPipe } from '../common/pipes/parseStringArray.pipe';
+import { ParseNumberArrayPipe } from '../common/pipes/parseNumberArray.pipe';
 import { CustomRequest } from '../common/interfaces/custom-request.interface';
-import { ParseNumberArrayPipe } from '../common/pipes/parseNumberArrayPipe.pipe';
 import { TypeormExceptionFilter } from '../common/filters/exceptionfilters/typeorm-exception.filter';
 
 @Controller({
@@ -250,7 +251,7 @@ export class BooksController {
     }
   }
 
-  @Patch(':slug')
+  @Patch('update/:slug')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   @UseInterceptors(FileInterceptor('coverImage'))
@@ -273,16 +274,21 @@ export class BooksController {
     }
   }
 
-  @Patch('restore/:slug')
+  @Patch('restore')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({ groups: [GROUP_USER] })
   async restore(
     @Request() req: CustomRequest,
-    @Param('slug') bookSlug: string,
-  ): Promise<Book> {
+    @Query('slugs', ParseStringArrayPipe) slugs: string[],
+  ): Promise<Book[]> {
+    if (slugs.length === 0) {
+      throw new BadRequestException(
+        'At least one slug is required as query param',
+      );
+    }
     try {
-      return this.booksService.restore(req.user, bookSlug);
+      return this.booksService.restore(req.user, slugs);
     } catch (error) {
       throw new InternalServerErrorException(`Error while restoring book`);
     }
@@ -303,16 +309,21 @@ export class BooksController {
     }
   }
 
-  @Delete('hard/:slug')
+  @Delete('hard')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({ groups: [GROUP_USER] })
   async remove(
     @Request() req: CustomRequest,
-    @Param('slug') bookSlug: string,
-  ): Promise<Book> {
+    @Query('slugs', ParseStringArrayPipe) slugs: string[],
+  ): Promise<Book[]> {
+    if (slugs.length === 0) {
+      throw new BadRequestException(
+        'At least one slug is required as query param',
+      );
+    }
     try {
-      return this.booksService.remove(req.user, bookSlug);
+      return this.booksService.remove(req.user, slugs);
     } catch (error) {
       throw new InternalServerErrorException(`Error while hard deleting book`);
     }
