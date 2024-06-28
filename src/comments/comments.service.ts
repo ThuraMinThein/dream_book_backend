@@ -114,7 +114,7 @@ export class CommentsService {
       ...updateCommentDto,
     });
 
-    return updatedComment;
+    return this.commentsRepository.save(updatedComment);
   }
 
   async remove(user: User, id: number): Promise<Comment> {
