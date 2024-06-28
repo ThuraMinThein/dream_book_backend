@@ -106,9 +106,9 @@ export class BooksService {
     }
 
     const paginatedBooks = await paginate<Book>(qb, options);
-    if (paginatedBooks.items.length === 0) {
-      throw new NotFoundException('No books found');
-    }
+    // if (paginatedBooks.items.length === 0) {
+    //   throw new NotFoundException('No books found');
+    // }
 
     //jf user logged in check if the book is user's favorited book
     await this.setFavoriteManyBooks(paginatedBooks, user);
@@ -128,9 +128,9 @@ export class BooksService {
 
     const paginatedBooks = await paginate<Book>(qb, options);
 
-    if (paginatedBooks.items.length === 0) {
-      throw new NotFoundException('No books found');
-    }
+    // if (paginatedBooks.items.length === 0) {
+    //   throw new NotFoundException('No books found');
+    // }
 
     //jf user logged in check if the book is user's favorited book
     await this.setFavoriteManyBooks(paginatedBooks, user);
@@ -227,9 +227,9 @@ export class BooksService {
 
     const paginatedBooks = await paginate<Book>(qb, options);
 
-    if (paginatedBooks.items.length === 0) {
-      throw new NotFoundException('No books found');
-    }
+    // if (paginatedBooks.items.length === 0) {
+    //   throw new NotFoundException('No books found');
+    // }
 
     //jf user logged in check if the book is user's favorite book
     await this.setFavoriteManyBooks(paginatedBooks, user);
@@ -274,9 +274,9 @@ export class BooksService {
 
     const paginatedBooks = await paginate<Book>(qb, options);
 
-    if (paginatedBooks.items.length === 0) {
-      throw new NotFoundException('No books found');
-    }
+    // if (paginatedBooks.items.length === 0) {
+    //   throw new NotFoundException('No books found');
+    // }
 
     //check these books are user's favorite books or not
     await this.setFavoriteManyBooks(paginatedBooks, user);
@@ -410,8 +410,8 @@ export class BooksService {
     const qb = this.deletedBooks(userId);
 
     const paginatedBooks = await paginate<Book>(qb, options);
-    if (paginatedBooks.items.length === 0)
-      throw new NotFoundException("You haven't deleted any books");
+    // if (paginatedBooks.items.length === 0)
+    //   throw new NotFoundException("You haven't deleted any books");
 
     return paginatedBooks;
   }
@@ -595,7 +595,7 @@ export class BooksService {
   ) {
     let isFavorite: boolean = false;
     if (user) {
-      for (const book of paginatedBooks.items) {
+      for (const book of paginatedBooks?.items) {
         isFavorite = await this.isFavorite(user.userId, book.slug);
         book.isFavorite = isFavorite;
       }

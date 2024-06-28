@@ -46,7 +46,9 @@ export class Comment {
   book: Book;
 
   //reply comment
-  @ManyToOne(() => Comment, (comment) => comment.replies)
+  @ManyToOne(() => Comment, (comment) => comment.replies, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'parent_comment_id', referencedColumnName: 'commentId' })
   parentComment: Comment;
 

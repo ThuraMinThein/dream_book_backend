@@ -9,8 +9,8 @@ import {
   UpdateDateColumn,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Status } from '../../common/utils/enums/status.enum';
 import { Book } from '../../books/entities/book.entity';
+import { Status } from '../../common/utils/enums/status.enum';
 import { Progress } from '../../chapter-progress/entities/chapter-progress.entity';
 
 @Entity('chapters')

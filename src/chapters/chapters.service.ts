@@ -53,7 +53,7 @@ export class ChaptersService {
         cratedAt: 'ASC',
       },
     });
-    if (chapters.length === 0) throw new NotFoundException('No chapter found');
+    // if (chapters.length === 0) throw new NotFoundException('No chapter found');
     return chapters;
   }
 
@@ -88,7 +88,7 @@ export class ChaptersService {
         book: true,
       },
     });
-    if (chapters.length === 0) throw new NotFoundException('No chapter found');
+    // if (chapters.length === 0) throw new NotFoundException('No chapter found');
     return chapters;
   }
 

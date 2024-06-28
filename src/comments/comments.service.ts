@@ -65,8 +65,8 @@ export class CommentsService {
       .andWhere('comment.parentComment IS NULL');
 
     const paginatedComments = await paginate<Comment>(qb, options);
-    if (paginatedComments.items.length === 0)
-      throw new NotFoundException('No comments yet :(');
+    // if (paginatedComments.items.length === 0)
+    //   throw new NotFoundException('No comments yet :(');
     return paginatedComments;
   }
 
@@ -91,6 +91,7 @@ export class CommentsService {
     const comment = await this.commentsRepository.findOne({
       where: {
         commentId,
+        parentComment: null,
       },
       relations: {
         user: true,

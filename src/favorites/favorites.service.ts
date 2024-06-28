@@ -67,8 +67,8 @@ export class FavoritesService {
 
     const paginated = await paginate<Favorite>(qb, options);
     const favoritesBooks = paginated.items;
-    if (favoritesBooks.length === 0)
-      throw new NotFoundException("You don't have any favorite books yet");
+    // if (favoritesBooks.length === 0)
+    //   throw new NotFoundException("You don't have any favorite books yet");
 
     //set favorite to true
     favoritesBooks.forEach(async (fav) => {
