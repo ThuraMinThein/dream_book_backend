@@ -84,7 +84,11 @@ export class ChapterProgressService {
   ): Promise<Progress> {
     const { chapterId } = updateChapterProgressDto;
 
+    //check if book exists
+    await this.booksService.findOneWithSlug(slug);
+
     const chapter = await this.ChaptersService.findOne(chapterId);
+
     //check if progress exists
     const progress = await this.findOneByUser(user.userId, slug);
     if (!progress) throw new NotFoundException('Progress not found');

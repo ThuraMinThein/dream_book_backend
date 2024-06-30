@@ -53,7 +53,9 @@ export class HistoryService {
       },
       relations: {
         user: true,
-        book: true,
+        book: {
+          category: true,
+        },
       },
       order: {
         updatedAt: 'DESC',
