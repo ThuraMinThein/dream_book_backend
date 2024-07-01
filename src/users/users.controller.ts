@@ -2,11 +2,13 @@ import {
   Get,
   Body,
   Patch,
+  Param,
   Delete,
   Request,
   UseGuards,
   Controller,
   UseFilters,
+  ParseIntPipe,
   UploadedFile,
   UseInterceptors,
   SerializeOptions,
@@ -52,12 +54,12 @@ export class UsersController {
   //   return this.usersService.findAll();
   // }
 
-  // @Get(':id')
-  // @UseInterceptors(ClassSerializerInterceptor)
-  // @SerializeOptions({ groups: [GROUP_USER] })
-  // async findOne(@Param('id') id: string): Promise<User> {
-  //   return this.usersService.findOne(+id);
-  // }
+  @Get(':id')
+  @UseInterceptors(ClassSerializerInterceptor)
+  @SerializeOptions({ groups: [GROUP_USER] })
+  async findOne(@Param('id', ParseIntPipe) id: any): Promise<User> {
+    return this.usersService.findOne(id);
+  }
 
   @Patch()
   @UseGuards(JwtAuthGuard)

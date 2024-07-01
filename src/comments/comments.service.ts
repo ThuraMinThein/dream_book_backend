@@ -1,4 +1,9 @@
 import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
+import {
   paginate,
   Pagination,
   IPaginationOptions,
@@ -7,16 +12,17 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Comment } from './entities/comment.entity';
 import { User } from '../users/entities/user.entity';
+import { CommentsGateway } from './comments.gateway';
 import { BooksService } from '../books/books.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
-import { Injectable, NotFoundException } from '@nestjs/common';
 
 @Injectable()
 export class CommentsService {
   constructor(
     @InjectRepository(Comment) private commentsRepository: Repository<Comment>,
     private booksService: BooksService,
+    private commentsGateway: CommentsGateway,
   ) {}
 
   async create(
@@ -32,6 +38,11 @@ export class CommentsService {
     let parentComment: Comment;
     if (parentCommentId) {
       parentComment = await this.findOne(parentCommentId);
+
+      //check if this comment is replying to a child comment and then throw error
+      if (parentComment.replyTo) {
+        throw new BadRequestException('Cannot reply to a child comment');
+      }
     }
 
     //create comment
@@ -42,7 +53,9 @@ export class CommentsService {
       parentComment,
     });
 
-    return this.commentsRepository.save(newComment);
+    const comment = await this.commentsRepository.save(newComment);
+    this.commentsGateway.handleNewComment(comment);
+    return comment;
   }
 
   async findAll(
@@ -59,14 +72,10 @@ export class CommentsService {
       .leftJoinAndSelect('comment.parentComment', 'parentComment')
       .leftJoinAndSelect('comment.replies', 'replies')
       .leftJoinAndSelect('replies.user', 'repliesUser')
-      .leftJoinAndSelect('replies.replies', 'subReplies')
-      .leftJoinAndSelect('subReplies.user', 'subRepliesUser')
       .where('book.slug = :slug', { slug })
       .andWhere('comment.parentComment IS NULL');
 
     const paginatedComments = await paginate<Comment>(qb, options);
-    // if (paginatedComments.items.length === 0)
-    //   throw new NotFoundException('No comments yet :(');
     return paginatedComments;
   }
 
@@ -91,13 +100,13 @@ export class CommentsService {
     const comment = await this.commentsRepository.findOne({
       where: {
         commentId,
-        parentComment: null,
       },
       relations: {
         user: true,
         book: true,
       },
     });
+
     if (!comment) throw new NotFoundException('Parent comment not found');
     return comment;
   }
@@ -122,6 +131,8 @@ export class CommentsService {
     //check if comment exists
     const comment = await this.findOneByUser(user, id);
     await this.commentsRepository.delete(id);
+
+    this.commentsGateway.handleDeleteComment(id);
     return comment;
   }
 }

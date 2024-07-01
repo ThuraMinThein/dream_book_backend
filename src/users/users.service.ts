@@ -1,13 +1,14 @@
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UpdateUserDto } from './dto/update-user.dto';
-import {
-  Injectable,
-  ConflictException,
-  BadRequestException,
-} from '@nestjs/common';
 import { CountryCodeArray } from '../common/utils/constants/countryCode';
 import { CloudinaryService } from '../common/services/cloudinary/cloudinary.service';
 
@@ -28,15 +29,15 @@ export class UsersService {
   //   return users;
   // }
 
-  // async findOne(id: number): Promise<User> {
-  //   const user = await this.usersRepository.findOne({
-  //     where: {
-  //       userId: id,
-  //     },
-  //   });
-  //   if (!user) throw new NotFoundException('User not found');
-  //   return user;
-  // }
+  async findOne(userId: number): Promise<User> {
+    const user = await this.usersRepository.findOne({
+      where: {
+        userId,
+      },
+    });
+    if (!user) throw new NotFoundException('User not found');
+    return user;
+  }
 
   async update(
     user: User,

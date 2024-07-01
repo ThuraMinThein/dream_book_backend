@@ -11,8 +11,11 @@ import {
   UseFilters,
   Controller,
   ParseIntPipe,
+  UseInterceptors,
   DefaultValuePipe,
+  SerializeOptions,
   BadRequestException,
+  ClassSerializerInterceptor,
   InternalServerErrorException,
 } from '@nestjs/common';
 import { Comment } from './entities/comment.entity';
@@ -21,6 +24,7 @@ import { Pagination } from 'nestjs-typeorm-paginate';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
+import { GROUP_USER } from '../common/utils/serializers/group.serializer';
 import { CustomRequest } from '../common/interfaces/custom-request.interface';
 import { TypeormExceptionFilter } from '../common/filters/exceptionfilters/typeorm-exception.filter';
 
@@ -34,6 +38,8 @@ export class CommentsController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
+  @SerializeOptions({ groups: [GROUP_USER] })
   async create(
     @Request() req: CustomRequest,
     @Body() createCommentDto: CreateCommentDto,
@@ -46,6 +52,8 @@ export class CommentsController {
   }
 
   @Get()
+  @UseInterceptors(ClassSerializerInterceptor)
+  @SerializeOptions({ groups: [GROUP_USER] })
   async findAll(
     @Query('slug') slug: string,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
@@ -67,6 +75,8 @@ export class CommentsController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
+  @SerializeOptions({ groups: [GROUP_USER] })
   async update(
     @Request() req: CustomRequest,
     @Param('id', ParseIntPipe) id: any,
@@ -81,6 +91,8 @@ export class CommentsController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
+  @SerializeOptions({ groups: [GROUP_USER] })
   async remove(
     @Request() req: CustomRequest,
     @Param('id', ParseIntPipe) id: any,

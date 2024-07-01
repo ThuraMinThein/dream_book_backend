@@ -21,8 +21,8 @@ export class Comment {
   })
   comment: string;
 
-  // @Column({ name: 'reply_to', nullable: true, default: null })
-  // replyTo: number;
+  @Column({ name: 'reply_to', nullable: true, default: null })
+  replyTo: number;
 
   @CreateDateColumn({ name: 'created_at' })
   cratedAt: Date;
@@ -49,7 +49,7 @@ export class Comment {
   @ManyToOne(() => Comment, (comment) => comment.replies, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'parent_comment_id', referencedColumnName: 'commentId' })
+  @JoinColumn({ name: 'reply_to', referencedColumnName: 'commentId' })
   parentComment: Comment;
 
   @OneToMany(() => Comment, (comment) => comment.parentComment)
