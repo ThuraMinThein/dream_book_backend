@@ -71,7 +71,6 @@ export class User {
     nullable: true,
     default: null,
     type: 'varchar',
-    unique: true,
   })
   phoneNumber: string;
 

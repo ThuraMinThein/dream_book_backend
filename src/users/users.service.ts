@@ -55,8 +55,8 @@ export class UsersService {
 
     let newPhoneNumber = updateUserDto.phoneNumber;
     if (newPhoneNumber) {
-      //check if the new phone number is duplicated
-      await this.checkConflictPhoneNumber(newPhoneNumber, user.phoneNumber);
+      // //check if the new phone number is duplicated
+      // await this.checkConflictPhoneNumber(newPhoneNumber, user.phoneNumber);
 
       //separate country code and local number;
       CountryCodeArray.forEach((code: string) => {
@@ -143,13 +143,13 @@ export class UsersService {
     });
   }
 
-  async checkConflictPhoneNumber(phoneNumber: string, oldPhoneNumber: string) {
-    const user = await this.usersRepository.findOne({
-      where: {
-        phoneNumber,
-      },
-    });
-    if (user && phoneNumber !== oldPhoneNumber)
-      throw new ConflictException('Invalid phone number');
-  }
+  // async checkConflictPhoneNumber(phoneNumber: string, oldPhoneNumber: string) {
+  //   const user = await this.usersRepository.findOne({
+  //     where: {
+  //       phoneNumber,
+  //     },
+  //   });
+  //   if (user && phoneNumber !== oldPhoneNumber)
+  //     throw new ConflictException('Invalid phone number');
+  // }
 }
