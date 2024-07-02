@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Comment } from './entities/comment.entity';
@@ -25,28 +21,16 @@ export class CommentsService {
     user: User,
     createCommentDto: CreateCommentDto,
   ): Promise<Comment> {
-    const { slug, parentCommentId } = createCommentDto;
+    const { slug } = createCommentDto;
 
     //check if book exists
     const book = await this.booksService.findOneWithSlug(slug);
-
-    //check if new comment is a reply to an existing comment
-    let parentComment: Comment;
-    if (parentCommentId) {
-      parentComment = await this.findOne(parentCommentId);
-
-      //check if this comment is replying to a child comment and then throw error
-      if (parentComment.replyTo) {
-        throw new BadRequestException('Cannot reply to a child comment');
-      }
-    }
 
     //create comment
     const newComment = this.commentsRepository.create({
       ...createCommentDto,
       user,
       book,
-      parentComment,
     });
 
     const comment = await this.commentsRepository.save(newComment);
@@ -58,28 +42,40 @@ export class CommentsService {
     const { limit, page } = options;
 
     //check if book exists
-    await this.booksService.findOneWithSlug(slug);
+    const book = await this.booksService.findOneWithSlug(slug);
 
-    const totalItems = await this.commentsRepository
-      .createQueryBuilder('comment')
-      .leftJoin('comment.book', 'book')
-      .where('book.slug = :slug', { slug })
-      .andWhere('comment.parentComment IS NULL')
-      .getCount();
+    const totalItems = await this.commentsRepository.count({
+      where: {
+        book: {
+          slug: slug,
+        },
+      },
+    });
 
-    const comments = await this.commentsRepository
-      .createQueryBuilder('comment')
-      .leftJoin('comment.book', 'book')
-      .leftJoinAndSelect('comment.user', 'user')
-      .leftJoinAndSelect('comment.replies', 'replies')
-      .leftJoinAndSelect('replies.user', 'repliesUser')
-      .where('book.slug = :slug', { slug })
-      .andWhere('comment.parentComment IS NULL')
-      .orderBy('comment.createdAt', 'ASC')
-      .orderBy('replies.createdAt', 'ASC')
-      .skip((page - 1) * limit)
-      .take(limit)
-      .getMany();
+    const comments = await this.commentsRepository.find({
+      where: {
+        book: {
+          slug: slug,
+        },
+      },
+      relations: {
+        user: true,
+        replies: { user: true },
+      },
+      order: {
+        createdAt: 'ASC',
+      },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    comments.forEach((comment) => {
+      comment.replies.sort((a, b) => {
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
+        return dateA - dateB;
+      });
+    });
 
     const totalPages = Math.ceil(totalItems / limit);
     const meta = {

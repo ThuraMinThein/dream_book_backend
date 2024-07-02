@@ -18,6 +18,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { ChapterProgressModule } from './chapter-progress/chapter-progress.module';
 import { InterestedCategoriesModule } from './interested-categories/interested-categories.module';
+import { ReplyCommentsModule } from './reply-comments/reply-comments.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { InterestedCategoriesModule } from './interested-categories/interested-c
     CommentsModule,
     FavoritesModule,
     CategoriesModule,
+    ReplyCommentsModule,
     ChapterProgressModule,
     InterestedCategoriesModule,
   ],

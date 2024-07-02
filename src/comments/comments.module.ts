@@ -11,5 +11,6 @@ import { CommentsGateway } from './comments.gateway';
   imports: [TypeOrmModule.forFeature([Comment]), BooksModule, UsersModule],
   controllers: [CommentsController],
   providers: [CommentsService, CommentsGateway],
+  exports: [CommentsService],
 })
 export class CommentsModule {}

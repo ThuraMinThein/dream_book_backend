@@ -13,6 +13,7 @@ import { Comment } from '../../comments/entities/comment.entity';
 import { Favorite } from '../../favorites/entities/favorite.entity';
 import { History } from '../../book-history/entities/history.entity';
 import { GROUP_ADMIN } from '../../common/utils/serializers/group.serializer';
+import { ReplyComment } from '../../reply-comments/entities/reply-comment.entity';
 import { Progress } from '../../chapter-progress/entities/chapter-progress.entity';
 import { InterestedCategory } from '../../interested-categories/entities/interested-category.entity';
 
@@ -109,6 +110,9 @@ export class User {
   //a user can have many comments
   @OneToMany(() => Comment, (comments) => comments.user)
   comments: Comment[];
+
+  @OneToMany(() => ReplyComment, (replyComment) => replyComment.user)
+  repliesComments: ReplyComment[];
 
   //a user can have many chapter progresses
   @OneToMany(() => Progress, (progresses) => progresses.user)

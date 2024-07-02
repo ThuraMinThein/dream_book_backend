@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Book } from '../../books/entities/book.entity';
+import { ReplyComment } from '../../reply-comments/entities/reply-comment.entity';
 
 @Entity('comments')
 export class Comment {
@@ -20,9 +21,6 @@ export class Comment {
     type: 'text',
   })
   comment: string;
-
-  @Column({ name: 'reply_to', nullable: true, default: null })
-  replyTo: number;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
@@ -45,13 +43,7 @@ export class Comment {
   @JoinColumn({ name: 'book_id', referencedColumnName: 'bookId' })
   book: Book;
 
-  //reply comment
-  @ManyToOne(() => Comment, (comment) => comment.replies, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn({ name: 'reply_to', referencedColumnName: 'commentId' })
-  parentComment: Comment;
-
-  @OneToMany(() => Comment, (comment) => comment.parentComment)
-  replies: Comment[];
+  //one comment can have many replies
+  @OneToMany(() => ReplyComment, (reply) => reply.parentComment)
+  replies: ReplyComment[];
 }
