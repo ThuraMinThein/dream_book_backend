@@ -3,14 +3,10 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
-import {
-  paginate,
-  Pagination,
-  IPaginationOptions,
-} from 'nestjs-typeorm-paginate';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Comment } from './entities/comment.entity';
+import { Pagination } from 'nestjs-typeorm-paginate';
 import { User } from '../users/entities/user.entity';
 import { CommentsGateway } from './comments.gateway';
 import { BooksService } from '../books/books.service';
@@ -58,25 +54,46 @@ export class CommentsService {
     return comment;
   }
 
-  async findAll(
-    slug: string,
-    options: IPaginationOptions,
-  ): Promise<Pagination<Comment>> {
+  async findAll(slug: string, options: any): Promise<Pagination<Comment>> {
+    const { limit, page } = options;
+
     //check if book exists
     await this.booksService.findOneWithSlug(slug);
 
-    const qb = this.commentsRepository
+    const totalItems = await this.commentsRepository
       .createQueryBuilder('comment')
-      .leftJoinAndSelect('comment.user', 'user')
       .leftJoin('comment.book', 'book')
-      .leftJoinAndSelect('comment.parentComment', 'parentComment')
+      .where('book.slug = :slug', { slug })
+      .andWhere('comment.parentComment IS NULL')
+      .getCount();
+
+    const comments = await this.commentsRepository
+      .createQueryBuilder('comment')
+      .leftJoin('comment.book', 'book')
+      .leftJoinAndSelect('comment.user', 'user')
       .leftJoinAndSelect('comment.replies', 'replies')
       .leftJoinAndSelect('replies.user', 'repliesUser')
       .where('book.slug = :slug', { slug })
-      .andWhere('comment.parentComment IS NULL');
+      .andWhere('comment.parentComment IS NULL')
+      .orderBy('comment.createdAt', 'ASC')
+      .orderBy('replies.createdAt', 'ASC')
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getMany();
 
-    const paginatedComments = await paginate<Comment>(qb, options);
-    return paginatedComments;
+    const totalPages = Math.ceil(totalItems / limit);
+    const meta = {
+      totalItems: totalItems,
+      itemCount: comments.length,
+      itemsPerPage: limit,
+      totalPages: totalPages,
+      currentPage: page,
+    };
+
+    return {
+      items: comments,
+      meta,
+    };
   }
 
   async findOneByUser(user: User, commentId: number): Promise<Comment> {

@@ -25,7 +25,7 @@ export class Comment {
   replyTo: number;
 
   @CreateDateColumn({ name: 'created_at' })
-  cratedAt: Date;
+  createdAt: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
