@@ -190,28 +190,7 @@ export class BooksService {
 
     //search with title keywords and description
     if (search) {
-      // search with book title first
-      let searchResult: Book[] = await qb
-        .andWhere('books.title ILIKE :search', {
-          search: `%${search}%`,
-        })
-        .getMany();
-      // if there is nothing match with book title, search with keywords
-      if (searchResult.length === 0) {
-        searchResult = await qb
-          .where(
-            'EXISTS (SELECT 1 FROM unnest(books.keywords) keyword WHERE keyword ILIKE :search)',
-            { search: `%${search}%` },
-          )
-          .andWhere('books.status =:status', { status: Status.PUBLISHED })
-          .getMany();
-      }
-      // if nothing match with keywords, then search with description
-      if (searchResult.length === 0) {
-        qb.where('books.description ILIKE :search', {
-          search: `%${search}%`,
-        }).andWhere('books.status =:status', { status: Status.PUBLISHED });
-      }
+      await this.searchBooks(search, qb);
     }
 
     if (categoryIds.length > 0) {
@@ -226,10 +205,6 @@ export class BooksService {
     this.sortBooks(sortBy, qb);
 
     const paginatedBooks = await paginate<Book>(qb, options);
-
-    // if (paginatedBooks.items.length === 0) {
-    //   throw new NotFoundException('No books found');
-    // }
 
     //jf user logged in check if the book is user's favorite book
     await this.setFavoriteManyBooks(paginatedBooks, user);
@@ -272,28 +247,7 @@ export class BooksService {
 
     //search with title keywords and description
     if (search) {
-      // search with book title first
-      let searchResult: Book[] = await qb
-        .andWhere('books.title ILIKE :search', {
-          search: `%${search}%`,
-        })
-        .getMany();
-      // if there is nothing match with book title, search with keywords
-      if (searchResult.length === 0) {
-        searchResult = await qb
-          .where(
-            'EXISTS (SELECT 1 FROM unnest(books.keywords) keyword WHERE keyword ILIKE :search)',
-            { search: `%${search}%` },
-          )
-          .andWhere('books.status =:status', { status: Status.PUBLISHED })
-          .getMany();
-      }
-      // if nothing match with keywords, then search with description
-      if (searchResult.length === 0) {
-        qb.where('books.description ILIKE :search', {
-          search: `%${search}%`,
-        }).andWhere('books.status =:status', { status: Status.PUBLISHED });
-      }
+      await this.searchBooks(search, qb);
     }
 
     //sort books
@@ -585,7 +539,7 @@ export class BooksService {
     return deletedBook;
   }
 
-  async sortBooks(sortBy: SortBy, qb: SelectQueryBuilder<Book>) {
+  sortBooks(sortBy: SortBy, qb: SelectQueryBuilder<Book>) {
     switch (sortBy) {
       case SortBy.ATOZ:
         qb.orderBy('books.title', 'ASC');
@@ -599,6 +553,31 @@ export class BooksService {
       case SortBy.OLDEST:
         qb.orderBy('books.created_at', 'ASC');
         break;
+    }
+  }
+
+  async searchBooks(search: string, qb: SelectQueryBuilder<Book>) {
+    // search with book title first
+    let searchResult: Book[] = await qb
+      .andWhere('books.title ILIKE :search', {
+        search: `%${search}%`,
+      })
+      .getMany();
+    // if there is nothing match with book title, search with keywords
+    if (searchResult.length === 0) {
+      searchResult = await qb
+        .where(
+          'EXISTS (SELECT 1 FROM unnest(books.keywords) keyword WHERE keyword ILIKE :search)',
+          { search: `%${search}%` },
+        )
+        .andWhere('books.status =:status', { status: Status.PUBLISHED })
+        .getMany();
+    }
+    // if nothing match with keywords, then search with description
+    if (searchResult.length === 0) {
+      qb.where('books.description ILIKE :search', {
+        search: `%${search}%`,
+      }).andWhere('books.status =:status', { status: Status.PUBLISHED });
     }
   }
 
