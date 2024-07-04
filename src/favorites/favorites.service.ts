@@ -12,6 +12,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { events } from '../common/utils/constants/event.constant';
+import { Status } from '../common/utils/enums/status.enum';
 
 @Injectable()
 export class FavoritesService {
@@ -63,12 +64,11 @@ export class FavoritesService {
       .innerJoinAndSelect('favorite.book', 'book')
       .innerJoinAndSelect('favorite.user', 'bookUser')
       .innerJoinAndSelect('book.user', 'user')
-      .innerJoinAndSelect('book.category', 'category');
+      .innerJoinAndSelect('book.category', 'category')
+      .andWhere('book.status = :status', { status: Status.PUBLISHED });
 
     const paginated = await paginate<Favorite>(qb, options);
     const favoritesBooks = paginated.items;
-    // if (favoritesBooks.length === 0)
-    //   throw new NotFoundException("You don't have any favorite books yet");
 
     //set favorite to true
     favoritesBooks.forEach(async (fav) => {
