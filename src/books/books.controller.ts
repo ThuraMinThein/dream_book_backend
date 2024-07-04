@@ -193,6 +193,7 @@ export class BooksController {
   @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({ groups: [GROUP_USER] })
   async findAllByAuthor(
+    @Query('search') search: string,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(12), ParseIntPipe) limit: number,
     @Query('sortBy', new DefaultValuePipe(SortBy.DEFAULT)) sortBy: SortBy,
@@ -203,7 +204,12 @@ export class BooksController {
       limit,
     };
     try {
-      return this.booksService.findAllByAuthor(req.user, sortBy, options);
+      return this.booksService.findAllByAuthor(
+        req.user,
+        sortBy,
+        search,
+        options,
+      );
     } catch (error) {
       throw new InternalServerErrorException(
         'Error while fetching author created books',

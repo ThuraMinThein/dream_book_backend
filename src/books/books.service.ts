@@ -261,6 +261,7 @@ export class BooksService {
   async findAllByAuthor(
     user: User,
     sortBy: SortBy,
+    search: string,
     options: IPaginationOptions,
   ): Promise<Pagination<Book>> {
     const qb = this.booksRepository
@@ -269,14 +270,36 @@ export class BooksService {
       .leftJoinAndSelect(`books.category`, 'category')
       .andWhere('user.userId = :userId', { userId: user.userId });
 
+    //search with title keywords and description
+    if (search) {
+      // search with book title first
+      let searchResult: Book[] = await qb
+        .andWhere('books.title ILIKE :search', {
+          search: `%${search}%`,
+        })
+        .getMany();
+      // if there is nothing match with book title, search with keywords
+      if (searchResult.length === 0) {
+        searchResult = await qb
+          .where(
+            'EXISTS (SELECT 1 FROM unnest(books.keywords) keyword WHERE keyword ILIKE :search)',
+            { search: `%${search}%` },
+          )
+          .andWhere('books.status =:status', { status: Status.PUBLISHED })
+          .getMany();
+      }
+      // if nothing match with keywords, then search with description
+      if (searchResult.length === 0) {
+        qb.where('books.description ILIKE :search', {
+          search: `%${search}%`,
+        }).andWhere('books.status =:status', { status: Status.PUBLISHED });
+      }
+    }
+
     //sort books
     this.sortBooks(sortBy, qb);
 
     const paginatedBooks = await paginate<Book>(qb, options);
-
-    // if (paginatedBooks.items.length === 0) {
-    //   throw new NotFoundException('No books found');
-    // }
 
     //check these books are user's favorite books or not
     await this.setFavoriteManyBooks(paginatedBooks, user);
