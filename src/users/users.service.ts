@@ -11,7 +11,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { CountryCodeArray } from '../common/utils/constants/countryCode';
 import { CloudinaryService } from '../common/services/cloudinary/cloudinary.service';
-import { OtherUserSerializer } from '../common/utils/serializers/otherUser.serializer';
 
 @Injectable()
 export class UsersService {
@@ -37,7 +36,8 @@ export class UsersService {
       },
     });
     if (!user) throw new NotFoundException('User not found');
-    return new OtherUserSerializer(user);
+    // return new OtherUserSerializer({ ...user });
+    return user;
   }
 
   async update(

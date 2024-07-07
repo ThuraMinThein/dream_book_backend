@@ -55,6 +55,8 @@ export class UsersController {
   // }
 
   @Get(':id')
+  @UseInterceptors(ClassSerializerInterceptor)
+  @SerializeOptions({ groups: [GROUP_USER] })
   async findOne(@Param('id', ParseIntPipe) id: any) {
     return this.usersService.findOne(id);
   }
