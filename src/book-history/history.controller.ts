@@ -12,6 +12,8 @@ import {
   SerializeOptions,
   ClassSerializerInterceptor,
   InternalServerErrorException,
+  DefaultValuePipe,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { HistoryService } from './history.service';
 import { History } from './entities/history.entity';
@@ -20,6 +22,7 @@ import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { GROUP_USER } from '../common/utils/serializers/group.serializer';
 import { CustomRequest } from '../common/interfaces/custom-request.interface';
 import { TypeormExceptionFilter } from '../common/filters/exceptionfilters/typeorm-exception.filter';
+import { IPaginationOptions, Pagination } from 'nestjs-typeorm-paginate';
 
 @Controller({
   path: 'history',
@@ -48,9 +51,17 @@ export class HistoryController {
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({ groups: [GROUP_USER] })
-  async getAllHistory(@Request() req: CustomRequest): Promise<History[]> {
+  async getPaginatedHistory(
+    @Request() req: CustomRequest,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(12), ParseIntPipe) limit: number,
+  ): Promise<Pagination<History>> {
+    const options: IPaginationOptions = {
+      page,
+      limit,
+    };
     try {
-      return this.historyService.getAllHistory(req.user);
+      return this.historyService.getPaginatedHistory(req.user, options);
     } catch (error) {
       throw new InternalServerErrorException('Error while fetching histories');
     }

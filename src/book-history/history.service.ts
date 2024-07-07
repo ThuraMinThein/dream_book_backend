@@ -5,6 +5,11 @@ import { User } from '../users/entities/user.entity';
 import { BooksService } from '../books/books.service';
 import { CreateHistoryDto } from './dto/create-history.dto';
 import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  IPaginationOptions,
+  paginate,
+  Pagination,
+} from 'nestjs-typeorm-paginate';
 
 @Injectable()
 export class HistoryService {
@@ -43,6 +48,24 @@ export class HistoryService {
     }
 
     return newHistory;
+  }
+
+  async getPaginatedHistory(
+    user: User,
+    options: IPaginationOptions,
+  ): Promise<Pagination<History>> {
+    const { userId } = user;
+    const qb = this.historyRepository
+      .createQueryBuilder('history')
+      .leftJoinAndSelect('history.user', 'user')
+      .leftJoinAndSelect('history.book', 'book')
+      .leftJoinAndSelect('book.category', 'category')
+      .where('history.userId = :userId', { userId })
+      .orderBy('history.updatedAt', 'DESC');
+
+    const history = await paginate<History>(qb, options);
+
+    return history;
   }
 
   async getAllHistory(user: User): Promise<History[]> {
