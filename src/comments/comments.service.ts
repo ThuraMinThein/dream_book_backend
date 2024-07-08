@@ -93,18 +93,13 @@ export class CommentsService {
   }
 
   async findOneByUser(user: User, commentId: number): Promise<Comment> {
-    const comment = await this.commentsRepository.findOne({
-      where: {
-        commentId,
-        user: {
-          userId: user.userId,
-        },
-      },
-      relations: {
-        user: true,
-        book: true,
-      },
-    });
+    const comment = await this.commentsRepository
+      .createQueryBuilder('comment')
+      .leftJoinAndSelect('comment.book', 'book')
+      .where('comment.comment_id = :commentId', { commentId })
+      .andWhere('comment.user_id = :userId', { userId: user.userId })
+      .orWhere('book.user_id = :userId', { userId: user.userId })
+      .getOne();
     if (!comment) throw new NotFoundException('comment not found');
     return comment;
   }
