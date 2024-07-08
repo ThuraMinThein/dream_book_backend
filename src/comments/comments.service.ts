@@ -63,7 +63,7 @@ export class CommentsService {
         replies: { user: true },
       },
       order: {
-        createdAt: 'ASC',
+        createdAt: 'DESC',
       },
       skip: (page - 1) * limit,
       take: limit,
@@ -73,7 +73,7 @@ export class CommentsService {
       comment.replies.sort((a, b) => {
         const dateA = new Date(a.createdAt).getTime();
         const dateB = new Date(b.createdAt).getTime();
-        return dateA - dateB;
+        return dateB - dateA;
       });
     });
 

@@ -40,7 +40,7 @@ export class HistoryService {
     const totalHistory = await this.getAllHistory(user);
     const lastIndex = totalHistory.length - 1;
 
-    if (totalHistory.length > 10) {
+    if (totalHistory.length > 12) {
       const { userId } = user;
       const { bookId } = totalHistory[lastIndex];
 
@@ -48,24 +48,6 @@ export class HistoryService {
     }
 
     return newHistory;
-  }
-
-  async getPaginatedHistory(
-    user: User,
-    options: IPaginationOptions,
-  ): Promise<Pagination<History>> {
-    const { userId } = user;
-    const qb = this.historyRepository
-      .createQueryBuilder('history')
-      .leftJoinAndSelect('history.user', 'user')
-      .leftJoinAndSelect('history.book', 'book')
-      .leftJoinAndSelect('book.category', 'category')
-      .where('history.userId = :userId', { userId })
-      .orderBy('history.updatedAt', 'DESC');
-
-    const history = await paginate<History>(qb, options);
-
-    return history;
   }
 
   async getAllHistory(user: User): Promise<History[]> {
