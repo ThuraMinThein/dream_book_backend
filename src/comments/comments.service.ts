@@ -92,7 +92,7 @@ export class CommentsService {
     };
   }
 
-  async findOneByUser(user: User, commentId: number): Promise<Comment> {
+  async findOneByUserToDelete(user: User, commentId: number): Promise<Comment> {
     const comment = await this.commentsRepository
       .createQueryBuilder('comment')
       .leftJoinAndSelect('comment.book', 'book')
@@ -154,7 +154,7 @@ export class CommentsService {
 
   async remove(user: User, id: number): Promise<Comment> {
     //check if comment exists
-    const comment = await this.findOneByUser(user, id);
+    const comment = await this.findOneByUserToDelete(user, id);
     await this.commentsRepository.delete(id);
 
     this.commentsGateway.handleDeleteComment(id);

@@ -23,6 +23,9 @@ export class ReplyComment {
   @Column({ name: 'reply_to' })
   replyTo: number;
 
+  @Column({ name: 'user_id' })
+  userId: number;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

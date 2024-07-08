@@ -33,7 +33,7 @@ export class ReplyCommentsService {
     return this.replyCommentsRepository.save(newReplyComment);
   }
 
-  async findOneByUser(user: User, id: number): Promise<ReplyComment> {
+  async findOneByUserToUpdate(user: User, id: number): Promise<ReplyComment> {
     const replyComment = await this.replyCommentsRepository.findOne({
       where: {
         id,
@@ -48,13 +48,29 @@ export class ReplyCommentsService {
     return replyComment;
   }
 
+  async findOneByUserToDelete(user: User, id: number): Promise<ReplyComment> {
+    const replyComment = await this.replyCommentsRepository
+      .createQueryBuilder('replyComment')
+      .leftJoinAndSelect('replyComment.parentComment', 'parentComment')
+      .leftJoinAndSelect('parentComment.book', 'book')
+      .where('replyComment.id = :id', { id })
+      .andWhere('replyComment.user_id = :userId', { userId: user.userId })
+      .orWhere('book.user_id = :userId', { userId: user.userId })
+      .getOne();
+
+    if (!replyComment) {
+      throw new NotFoundException(`Reply comment not found`);
+    }
+    return replyComment;
+  }
+
   async update(
     user: User,
     id: number,
     updateReplyDto: UpdateReplyDto,
   ): Promise<ReplyComment> {
     //check if comment exists
-    const comment = await this.findOneByUser(user, id);
+    const comment = await this.findOneByUserToUpdate(user, id);
 
     const updatedReplyComment = this.replyCommentsRepository.create({
       ...comment,
@@ -66,7 +82,7 @@ export class ReplyCommentsService {
 
   async remove(user: User, id: number): Promise<ReplyComment> {
     //check if comment exists
-    const comment = await this.findOneByUser(user, id);
+    const comment = await this.findOneByUserToDelete(user, id);
     await this.replyCommentsRepository.delete(id);
 
     return comment;
