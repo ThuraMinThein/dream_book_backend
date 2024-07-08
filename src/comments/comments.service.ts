@@ -104,6 +104,23 @@ export class CommentsService {
     return comment;
   }
 
+  async findOneByUserToUpdate(user: User, commentId: number): Promise<Comment> {
+    const comment = await this.commentsRepository.findOne({
+      where: {
+        commentId,
+        user: {
+          userId: user.userId,
+        },
+      },
+      relations: {
+        user: true,
+        book: true,
+      },
+    });
+    if (!comment) throw new NotFoundException('comment not found');
+    return comment;
+  }
+
   async findOne(commentId: number): Promise<Comment> {
     const comment = await this.commentsRepository.findOne({
       where: {
@@ -125,7 +142,7 @@ export class CommentsService {
     updateCommentDto: UpdateCommentDto,
   ): Promise<Comment> {
     //check if comment exists;
-    const comment = await this.findOneByUser(user, id);
+    const comment = await this.findOneByUserToUpdate(user, id);
 
     const updatedComment = this.commentsRepository.create({
       ...comment,
