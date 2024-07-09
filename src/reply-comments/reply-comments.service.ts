@@ -6,6 +6,7 @@ import { ReplyComment } from './entities/reply-comment.entity';
 import { CommentsService } from '../comments/comments.service';
 import { UpdateReplyDto } from './dto/update-reply-comment.dto';
 import { CreateReplyDto } from './dto/create-reply-comment.dto';
+import { ReplyCommentsGateway } from './reply-comments.gateway';
 
 @Injectable()
 export class ReplyCommentsService {
@@ -13,6 +14,7 @@ export class ReplyCommentsService {
     @InjectRepository(ReplyComment)
     private replyCommentsRepository: Repository<ReplyComment>,
     private commentsService: CommentsService,
+    private replyCommentsGateway: ReplyCommentsGateway,
   ) {}
 
   async create(
@@ -30,7 +32,12 @@ export class ReplyCommentsService {
       parentComment,
     });
 
-    return this.replyCommentsRepository.save(newReplyComment);
+    const replyComment =
+      await this.replyCommentsRepository.save(newReplyComment);
+
+    this.replyCommentsGateway.handleNewComment(replyComment);
+
+    return replyComment;
   }
 
   async findOneByUserToUpdate(user: User, id: number): Promise<ReplyComment> {
@@ -85,6 +92,7 @@ export class ReplyCommentsService {
     const comment = await this.findOneByUserToDelete(user, id);
     await this.replyCommentsRepository.delete(id);
 
+    this.replyCommentsGateway.handleDeleteComment(id);
     return comment;
   }
 }
