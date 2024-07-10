@@ -127,31 +127,31 @@ export class ChaptersService {
     await this.chaptersRepository.save(updatedChapter);
 
     //check if there is no published chapter and the book is published, then unpublish the book
-    const bookId = chapter.book.bookId;
+    const { userId } = user;
+    const { bookId } = chapter;
+    await this.checkHasPublishedChapters(userId, bookId);
 
-    const publishedChapters = await this.getpublishedChaptersByAuthor(
-      user.userId,
-      bookId,
-    );
-
-    if (publishedChapters.length === 0) {
-      this.eventEmitter.emit(events.BOOK_STATUS_CHANGED, { bookId });
-    }
     return updatedChapter;
   }
 
   async remove(user: User, chapterId: number): Promise<Chapter> {
     const chapter = await this.findOneByAuthor(user, chapterId);
     await this.chaptersRepository.delete(chapterId);
+
+    const { userId } = user;
+    const { bookId } = chapter;
+    //check if there is no more published chapter then unpublish the book
+    await this.checkHasPublishedChapters(userId, bookId);
+
     return chapter;
   }
 
   //functions
 
-  async getpublishedChaptersByAuthor(
+  async checkHasPublishedChapters(
     userId: number,
     bookId: number,
-  ): Promise<Chapter[]> {
+  ): Promise<void> {
     const publishedChapters = await this.chaptersRepository.find({
       where: {
         book: {
@@ -163,6 +163,9 @@ export class ChaptersService {
         status: Status.PUBLISHED,
       },
     });
-    return publishedChapters;
+
+    if (publishedChapters.length === 0) {
+      this.eventEmitter.emit(events.BOOK_STATUS_CHANGED, { bookId });
+    }
   }
 }

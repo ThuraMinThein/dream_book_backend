@@ -12,7 +12,6 @@ import {
 } from 'nestjs-typeorm-paginate';
 import slugify from 'slugify';
 import { Book } from './entities/book.entity';
-import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../users/entities/user.entity';
 import { addDays, differenceInDays } from 'date-fns';
@@ -21,6 +20,7 @@ import { UpdateBookDto } from './dto/update-book.dto';
 import { SortBy } from '../common/utils/enums/sortBy.enum';
 import { Status } from '../common/utils/enums/status.enum';
 import { Chapter } from '../chapters/entities/chapter.entity';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { Favorite } from '../favorites/entities/favorite.entity';
 import { BookIdEvent } from '../common/utils/events/bookId.event';
 import { events } from '../common/utils/constants/event.constant';

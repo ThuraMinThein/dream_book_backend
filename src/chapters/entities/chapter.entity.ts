@@ -5,7 +5,6 @@ import {
   OneToMany,
   JoinColumn,
   CreateDateColumn,
-  DeleteDateColumn,
   UpdateDateColumn,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -19,22 +18,22 @@ export class Chapter {
   chapterId: number;
 
   @Column({
-    type: 'varchar',
     length: 255,
+    type: 'varchar',
   })
   title: string;
 
   @Column({
     type: 'text',
-    nullable: true,
     default: null,
+    nullable: true,
   })
   content: string;
 
-  @Column({
-    default: 0,
-  })
-  priority: number;
+  // @Column({
+  //   default: 0,
+  // })
+  // priority: number;
 
   @Column({
     type: 'enum',
@@ -43,14 +42,14 @@ export class Chapter {
   })
   status: Status;
 
+  @Column({ type: 'number', name: 'book_id' })
+  bookId: number;
+
   @CreateDateColumn({ name: 'created_at' })
   cratedAt: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
-
-  @DeleteDateColumn({ name: 'deleted_at' })
-  deletedAt: Date;
 
   //relationship
   //many chapters can be owned by a book

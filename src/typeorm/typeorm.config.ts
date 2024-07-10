@@ -40,7 +40,7 @@ const config: PostgresConnectionOptions = {
     InterestedCategory,
   ],
   ...sslReject,
-  synchronize: false,
+  synchronize: true,
 };
 
 export default config;
