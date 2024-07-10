@@ -9,10 +9,10 @@ import { User } from '../users/entities/user.entity';
 import { BooksService } from '../books/books.service';
 import { Favorite } from './entities/favorite.entity';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Status } from '../common/utils/enums/status.enum';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { events } from '../common/utils/constants/event.constant';
-import { Status } from '../common/utils/enums/status.enum';
 
 @Injectable()
 export class FavoritesService {

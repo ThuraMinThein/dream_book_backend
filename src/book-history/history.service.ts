@@ -5,11 +5,9 @@ import { User } from '../users/entities/user.entity';
 import { BooksService } from '../books/books.service';
 import { CreateHistoryDto } from './dto/create-history.dto';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import {
-  IPaginationOptions,
-  paginate,
-  Pagination,
-} from 'nestjs-typeorm-paginate';
+import { OnEvent } from '@nestjs/event-emitter';
+import { events } from '../common/utils/constants/event.constant';
+import { BookIdEvent } from '../common/utils/events/bookId.event';
 
 @Injectable()
 export class HistoryService {
@@ -94,5 +92,13 @@ export class HistoryService {
     });
 
     return history;
+  }
+
+  //events
+  @OnEvent(events.CLEAR_HISTORY, { async: true })
+  async clearHistory(payload: BookIdEvent) {
+    const { bookId } = payload;
+    const histories = await this.historyRepository.find({ where: { bookId } });
+    await this.historyRepository.remove(histories);
   }
 }

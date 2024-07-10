@@ -12,7 +12,7 @@ import {
 } from 'nestjs-typeorm-paginate';
 import slugify from 'slugify';
 import { Book } from './entities/book.entity';
-import { OnEvent } from '@nestjs/event-emitter';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../users/entities/user.entity';
 import { addDays, differenceInDays } from 'date-fns';
@@ -38,6 +38,7 @@ export class BooksService {
     @InjectRepository(Chapter) private chaptersRepository: Repository<Chapter>,
     private cloudinaryService: CloudinaryService,
     private categoriesService: CategoriesService,
+    private eventEmitter: EventEmitter2,
     private interestedCategoriesService: InterestedCategoriesService,
   ) {}
 
@@ -326,6 +327,10 @@ export class BooksService {
           "This book has no published chapters, can't publish the book",
         );
       }
+    } else {
+      const { bookId } = book;
+      //if user unpublished the book, then clear every history belong to this book.
+      this.eventEmitter.emit(events.CLEAR_HISTORY, { bookId });
     }
 
     //if the user wants to change the image, replace image in cloudinary with new and old image
@@ -396,21 +401,29 @@ export class BooksService {
   async softDelete(user: User, bookSlug: string): Promise<Book> {
     const book = await this.findOneWithSlugByAuthor(user, bookSlug);
 
+    const { bookId } = book;
+
     //set deleted expired date
     const deletedExpiredDate = this.softDeletedExpiredDate();
     book.deletedExpiredDate = deletedExpiredDate;
+
     //set deleted expired day
     const expireDayLeft = differenceInDays(
       deletedExpiredDate,
       new Date().toLocaleString(),
     );
     book.expireDayLeft = expireDayLeft;
+
     //unpublish the book
     book.status = Status.DRAFT;
     await this.booksRepository.save(book);
 
     //soft delete book
-    await this.booksRepository.softDelete(book.bookId);
+    await this.booksRepository.softDelete(bookId);
+
+    //if user unpublished the book, then clear every history belong to this book.
+    this.eventEmitter.emit(events.CLEAR_HISTORY, { bookId });
+
     return { ...book, expireDayLeft };
   }
 
