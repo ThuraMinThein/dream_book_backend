@@ -78,15 +78,15 @@ export class UsersController {
     }
   }
 
-  @Delete()
-  @UseGuards(JwtAuthGuard)
-  @UseInterceptors(ClassSerializerInterceptor)
-  @SerializeOptions({ groups: [GROUP_USER] })
-  async remove(@Request() req: CustomRequest): Promise<User> {
-    try {
-      return this.usersService.remove(req.user);
-    } catch (error) {
-      throw new InternalServerErrorException('Error while deleting user');
-    }
-  }
+  // @Delete()
+  // @UseGuards(JwtAuthGuard)
+  // @UseInterceptors(ClassSerializerInterceptor)
+  // @SerializeOptions({ groups: [GROUP_USER] })
+  // async remove(@Request() req: CustomRequest): Promise<User> {
+  //   try {
+  //     return this.usersService.remove(req.user);
+  //   } catch (error) {
+  //     throw new InternalServerErrorException('Error while deleting user');
+  //   }
+  // }
 }

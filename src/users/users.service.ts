@@ -110,15 +110,15 @@ export class UsersService {
     return this.usersRepository.save(updatedUser);
   }
 
-  async remove(user: User): Promise<User> {
-    //delete image in cloudinary if there is an image
-    user?.profilePicture &&
-      (await this.cloudinaryService.deleteImage(user.profilePicture));
+  // async remove(user: User): Promise<User> {
+  //   //delete image in cloudinary if there is an image
+  //   user?.profilePicture &&
+  //     (await this.cloudinaryService.deleteImage(user.profilePicture));
 
-    //delete user
-    await this.usersRepository.delete(user.userId);
-    return user;
-  }
+  //   //delete user
+  //   await this.usersRepository.delete(user.userId);
+  //   return user;
+  // }
 
   //functions
 
