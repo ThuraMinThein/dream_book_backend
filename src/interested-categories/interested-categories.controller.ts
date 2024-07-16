@@ -70,20 +70,20 @@ export class InterestedCategoriesController {
     }
   }
 
-  @Delete(':id')
-  @UseGuards(JwtAuthGuard)
-  @UseInterceptors(ClassSerializerInterceptor)
-  @SerializeOptions({ groups: [GROUP_USER] })
-  async delete(
-    @Request() req: CustomRequest,
-    @Param('id', ParseIntPipe) id: any,
-  ): Promise<InterestedCategory> {
-    try {
-      return this.interestedCategoriesService.delete(req.user, id);
-    } catch (error) {
-      throw new InternalServerErrorException(
-        'Error while deleting interested category',
-      );
-    }
-  }
+  // @Delete(':id')
+  // @UseGuards(JwtAuthGuard)
+  // @UseInterceptors(ClassSerializerInterceptor)
+  // @SerializeOptions({ groups: [GROUP_USER] })
+  // async delete(
+  //   @Request() req: CustomRequest,
+  //   @Param('id', ParseIntPipe) id: any,
+  // ): Promise<InterestedCategory> {
+  //   try {
+  //     return this.interestedCategoriesService.delete(req.user, id);
+  //   } catch (error) {
+  //     throw new InternalServerErrorException(
+  //       'Error while deleting interested category',
+  //     );
+  //   }
+  // }
 }

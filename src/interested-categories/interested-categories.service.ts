@@ -89,9 +89,9 @@ export class InterestedCategoriesService {
     return interestedCategory;
   }
 
-  async delete(user: User, id: number): Promise<InterestedCategory> {
-    const interestedCategory = await this.findOneWithUserId(user.userId, id);
-    await this.interestedCategoriesRepository.delete(id);
-    return interestedCategory;
-  }
+  // async delete(user: User, id: number): Promise<InterestedCategory> {
+  //   const interestedCategory = await this.findOneWithUserId(user.userId, id);
+  //   await this.interestedCategoriesRepository.delete(id);
+  //   return interestedCategory;
+  // }
 }
