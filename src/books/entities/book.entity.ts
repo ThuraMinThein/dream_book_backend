@@ -92,7 +92,7 @@ export class Book {
   //relationships
   //many books can be created by a user
   @ManyToOne(() => User, (user) => user.books, {
-    onDelete: 'SET NULL',
+    onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'user_id', referencedColumnName: 'userId' })
   user: User;
