@@ -52,23 +52,23 @@ export class InterestedCategoriesController {
     }
   }
 
-  @Get()
-  @UseGuards(JwtAuthGuard)
-  @UseInterceptors(ClassSerializerInterceptor)
-  @SerializeOptions({ groups: [GROUP_USER] })
-  async getInterestedCategoriesByUser(
-    @Request() req: CustomRequest,
-  ): Promise<InterestedCategory[]> {
-    try {
-      return this.interestedCategoriesService.getInterestedCategoriesByUser(
-        req.user,
-      );
-    } catch (error) {
-      throw new InternalServerErrorException(
-        'Error while fetching interested categories',
-      );
-    }
-  }
+  // @Get()
+  // @UseGuards(JwtAuthGuard)
+  // @UseInterceptors(ClassSerializerInterceptor)
+  // @SerializeOptions({ groups: [GROUP_USER] })
+  // async getInterestedCategoriesByUser(
+  //   @Request() req: CustomRequest,
+  // ): Promise<InterestedCategory[]> {
+  //   try {
+  //     return this.interestedCategoriesService.getInterestedCategoriesByUser(
+  //       req.user,
+  //     );
+  //   } catch (error) {
+  //     throw new InternalServerErrorException(
+  //       'Error while fetching interested categories',
+  //     );
+  //   }
+  // }
 
   // @Delete(':id')
   // @UseGuards(JwtAuthGuard)

@@ -71,23 +71,23 @@ export class InterestedCategoriesService {
     return interestedCategory;
   }
 
-  async findOneWithUserId(
-    userId: number,
-    id: number,
-  ): Promise<InterestedCategory> {
-    const interestedCategory =
-      await this.interestedCategoriesRepository.findOne({
-        where: {
-          id,
-          user: {
-            userId,
-          },
-        },
-      });
-    if (!interestedCategory)
-      throw new NotFoundException('interestedCategory not found');
-    return interestedCategory;
-  }
+  // async findOneWithUserId(
+  //   userId: number,
+  //   id: number,
+  // ): Promise<InterestedCategory> {
+  //   const interestedCategory =
+  //     await this.interestedCategoriesRepository.findOne({
+  //       where: {
+  //         id,
+  //         user: {
+  //           userId,
+  //         },
+  //       },
+  //     });
+  //   if (!interestedCategory)
+  //     throw new NotFoundException('interestedCategory not found');
+  //   return interestedCategory;
+  // }
 
   // async delete(user: User, id: number): Promise<InterestedCategory> {
   //   const interestedCategory = await this.findOneWithUserId(user.userId, id);
