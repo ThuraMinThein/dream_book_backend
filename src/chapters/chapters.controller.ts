@@ -26,12 +26,12 @@ import { TypeormExceptionFilter } from '../common/filters/exceptionfilters/typeo
   path: 'chapters',
   version: '1',
 })
+@UseGuards(JwtAuthGuard)
 @UseFilters(TypeormExceptionFilter)
 export class ChaptersController {
   constructor(private readonly chaptersService: ChaptersService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard)
   async create(
     @Request() req: CustomRequest,
     @Body() createChapterDto: CreateChapterDto,
@@ -70,7 +70,6 @@ export class ChaptersController {
 
   //get chapters from author created books
   @Get('author')
-  @UseGuards(JwtAuthGuard)
   async findAllByAuthor(
     @Request() req: CustomRequest,
     @Query('slug') slug: string,
@@ -87,7 +86,6 @@ export class ChaptersController {
   }
 
   @Get('author/:id')
-  @UseGuards(JwtAuthGuard)
   async findOneByAuthor(
     @Request() req: CustomRequest,
     @Param('id', ParseIntPipe) chapterId: any,
@@ -102,7 +100,6 @@ export class ChaptersController {
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard)
   async update(
     @Request() req: CustomRequest,
     @Param('id', ParseIntPipe) id: any,
@@ -116,7 +113,6 @@ export class ChaptersController {
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
   async remove(
     @Request() req: CustomRequest,
     @Param('id', ParseIntPipe) id: any,
