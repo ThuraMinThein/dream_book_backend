@@ -59,8 +59,7 @@ export class ChapterProgressService {
         user: true,
       },
     });
-    if (!currentProgress) throw new NotFoundException('Progress not found');
-    return currentProgress;
+    return currentProgress ? currentProgress : null;
   }
 
   async findOneByUser(userId: number, slug: string): Promise<Progress> {
