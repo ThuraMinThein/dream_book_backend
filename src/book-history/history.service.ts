@@ -57,6 +57,7 @@ export class HistoryService {
       relations: {
         user: true,
         book: {
+          user: true,
           category: true,
         },
       },
