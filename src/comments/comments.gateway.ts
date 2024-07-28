@@ -8,9 +8,9 @@ import { Server } from 'socket.io';
 import { Comment } from './entities/comment.entity';
 
 @WebSocketGateway({
-  cors: {
-    origin: '*',
-  },
+  // cors: {
+  //   origin: '*',
+  // },
   namespace: 'comments',
 })
 export class CommentsGateway {
