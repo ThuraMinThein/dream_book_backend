@@ -19,9 +19,18 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { ChapterProgressModule } from './chapter-progress/chapter-progress.module';
 import { InterestedCategoriesModule } from './interested-categories/interested-categories.module';
 import { ReplyCommentsModule } from './reply-comments/reply-comments.module';
+import { CacheModule } from '@nestjs/cache-manager';
+// import * as redisStore from 'cache-manager-redis-store';
 
 @Module({
   imports: [
+    CacheModule.register({
+      ttl: 1000 * 6,
+      isGlobal: true,
+      // store: redisStore,
+      // host: 'host.docker.internal',
+      // port: 6379,
+    }),
     ScheduleModule.forRoot(),
     EventEmitterModule.forRoot(),
     ConfigModule.forRoot({
@@ -55,4 +64,4 @@ import { ReplyCommentsModule } from './reply-comments/reply-comments.module';
     },
   ],
 })
-export class AppModule {}
+export class AppModule { }

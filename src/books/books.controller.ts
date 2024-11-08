@@ -35,6 +35,7 @@ import { ParseStringArrayPipe } from '../common/pipes/parseStringArray.pipe';
 import { ParseNumberArrayPipe } from '../common/pipes/parseNumberArray.pipe';
 import { CustomRequest } from '../common/interfaces/custom-request.interface';
 import { TypeormExceptionFilter } from '../common/filters/exceptionfilters/typeorm-exception.filter';
+import { CacheInterceptor, CacheKey } from '@nestjs/cache-manager';
 
 @Controller({
   path: 'books',
@@ -42,7 +43,7 @@ import { TypeormExceptionFilter } from '../common/filters/exceptionfilters/typeo
 })
 @UseFilters(TypeormExceptionFilter)
 export class BooksController {
-  constructor(private readonly booksService: BooksService) {}
+  constructor(private readonly booksService: BooksService) { }
 
   @Post()
   @UseGuards(JwtAuthGuard)
@@ -88,7 +89,8 @@ export class BooksController {
 
   @Get('popular')
   @UseGuards(JwtOptionalGuard)
-  @UseInterceptors(ClassSerializerInterceptor)
+  @UseInterceptors(ClassSerializerInterceptor, CacheInterceptor)
+  @CacheKey('popular-books')
   @SerializeOptions({ groups: [GROUP_USER] })
   async getPopularBooks(
     @Request() req: CustomRequest,

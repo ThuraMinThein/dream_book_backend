@@ -23,6 +23,7 @@
     "start:vercel": "dotenv -e .env.vercel -- nest start --watch"
   },
   "dependencies": {
+    "@nestjs/cache-manager": "^2.3.0",
     "@nestjs/cli": "^10.0.0",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.2.2",
@@ -37,7 +38,10 @@
     "@nestjs/throttler": "^5.1.2",
     "@nestjs/typeorm": "^10.0.2",
     "@nestjs/websockets": "^10.3.9",
+    "@types/cache-manager-redis-store": "^2.0.4",
     "bcrypt": "^5.1.1",
+    "cache-manager": "^5.7.6",
+    "cache-manager-redis-store": "^2.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "cloudinary": "^2.2.0",

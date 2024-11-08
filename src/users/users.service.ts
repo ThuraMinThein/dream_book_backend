@@ -1,7 +1,6 @@
 import {
   Injectable,
   NotFoundException,
-  ConflictException,
   BadRequestException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
@@ -17,7 +16,7 @@ export class UsersService {
   constructor(
     @InjectRepository(User) private usersRepository: Repository<User>,
     private cloudinaryService: CloudinaryService,
-  ) {}
+  ) { }
 
   //services
 
@@ -45,16 +44,16 @@ export class UsersService {
     newProfilePicture: Express.Multer.File,
     updateUserDto: UpdateUserDto,
   ): Promise<User> {
-    //new datas
-    let { oldPassword } = updateUserDto;
+    //new data
+    const { oldPassword } = updateUserDto;
 
-    //datas from database
+    //data from database
     let { password, countryCode, phoneNumber, localNumber, profilePicture } =
       user;
 
     //phone number
 
-    let newPhoneNumber = updateUserDto.phoneNumber;
+    const newPhoneNumber = updateUserDto.phoneNumber;
     if (newPhoneNumber) {
       // //check if the new phone number is duplicated
       // await this.checkConflictPhoneNumber(newPhoneNumber, user.phoneNumber);
@@ -72,7 +71,7 @@ export class UsersService {
     }
 
     //if user wants to change the password, check if the old password and new password are the smae
-    let newPassword: string = updateUserDto.password;
+    const newPassword: string = updateUserDto.password;
     if (newPassword) {
       if (!oldPassword)
         throw new BadRequestException('Old password is reuqired');

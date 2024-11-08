@@ -40,7 +40,7 @@ export class BooksService {
     private categoriesService: CategoriesService,
     private eventEmitter: EventEmitter2,
     private interestedCategoriesService: InterestedCategoriesService,
-  ) {}
+  ) { }
 
   //services
 
@@ -84,7 +84,7 @@ export class BooksService {
     return this.booksRepository.save(newBook);
   }
 
-  //find recommendted books by user interested categories if user logged in
+  //find recommended books by user interested categories if user logged in
   async getRecommendedBookByUser(
     options: IPaginationOptions,
     user?: User,
@@ -111,7 +111,7 @@ export class BooksService {
     //   throw new NotFoundException('No books found');
     // }
 
-    //jf user logged in check if the book is user's favorited book
+    //jf user logged in check if the book is user's favorite book
     await this.setFavoriteManyBooks(paginatedBooks, user);
 
     return paginatedBooks;
@@ -133,7 +133,7 @@ export class BooksService {
     //   throw new NotFoundException('No books found');
     // }
 
-    //jf user logged in check if the book is user's favorited book
+    //jf user logged in check if the book is user's favorite book
     await this.setFavoriteManyBooks(paginatedBooks, user);
 
     return paginatedBooks;
@@ -227,7 +227,7 @@ export class BooksService {
     if (!book) {
       throw new NotFoundException('Book not found');
     }
-    //if the user loggedin check if this book is user's favorited book
+    //if the user logged in check if this book is user's favorite book
     await this.setFavoriteOneBook(book, user);
 
     return book;
@@ -358,7 +358,7 @@ export class BooksService {
 
     //if user changed the category, update the category priority
     if (updateBookDto?.categoryId) {
-      //descrease the priority of the old category
+      //decrease the priority of the old category
       await this.categoriesService.decreasePriority(book.category.categoryId);
       //increase the priority of the new category
       await this.categoriesService.increasePriority(category.categoryId);
@@ -372,7 +372,7 @@ export class BooksService {
     options: IPaginationOptions,
   ): Promise<Pagination<Book>> {
     const { userId } = user;
-    //get all deleted books and check if the deleted date is expired, then hard delte those books
+    //get all deleted books and check if the deleted date is expired, then hard delete those books
     const deletedBooks = await this.deletedBooks(userId).getMany();
     const checkedBooks = deletedBooks.map(async (book) => {
       const dayLeft = differenceInDays(book.deletedExpiredDate, new Date()) + 1;

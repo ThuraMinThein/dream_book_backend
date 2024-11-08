@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  dreambook:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dreambook
+    env_file:
+      - .env.dev
+    ports:
+      - '3333:3333'
+    volumes:
+      - .:/app
+      - 'nestjs_node_modules:/app/node_modules'
+    depends_on:
+      - postgres
+      - redis  # Ensure Redis starts before your app
+    networks:
+      - app-network
+
+  postgres:
+    image: 'postgres:latest'
+    container_name: dreambook-postgres
+    environment:
+      POSTGRES_HOST: host.docker.internal
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: thuraminthein12345
+      POSTGRES_DB: tcu_dev
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  redis:
+    image: 'redis:latest'
+    container_name: dreambook-redis
+    ports:
+      - '6379:6379'
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  nestjs_node_modules:
