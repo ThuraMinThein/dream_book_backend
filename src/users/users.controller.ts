@@ -3,7 +3,6 @@ import {
   Body,
   Patch,
   Param,
-  Delete,
   Request,
   UseGuards,
   Controller,
@@ -30,7 +29,7 @@ import { TypeormExceptionFilter } from 'src/common/filters/exceptionfilters/type
 })
 @UseFilters(TypeormExceptionFilter)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
