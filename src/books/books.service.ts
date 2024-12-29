@@ -28,6 +28,7 @@ import { Brackets, Repository, SelectQueryBuilder } from 'typeorm';
 import { CategoriesService } from '../categories/categories.service';
 import { CloudinaryService } from '../common/services/cloudinary/cloudinary.service';
 import { InterestedCategoriesService } from '../interested-categories/interested-categories.service';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class BooksService {
@@ -680,60 +681,59 @@ export class BooksService {
 
   //cron
 
-  // @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
-  // async deleteExpiredBooks() {
-  //   try {
-  //     const today = new Date();
-  //     // const result = await this.booksRepository.delete({
-  //     //   deletedExpiredDate: LessThan(today),
-  //     // });
-  //     const result = await this.booksRepository
-  //       .createQueryBuilder('books')
-  //       .withDeleted()
-  //       .leftJoinAndSelect(`books.user`, 'user')
-  //       .leftJoinAndSelect(`books.category`, 'category')
-  //       .andWhere('books.deleted_at IS NOT NULL ')
-  //       .getMany();
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async deleteExpiredBooks() {
+    try {
+      // const result = await this.booksRepository.delete({
+      //   deletedExpiredDate: LessThan(today),
+      // });
+      const result = await this.booksRepository
+        .createQueryBuilder('books')
+        .withDeleted()
+        .leftJoinAndSelect(`books.user`, 'user')
+        .leftJoinAndSelect(`books.category`, 'category')
+        .andWhere('books.deleted_at IS NOT NULL ')
+        .getMany();
 
-  //     result.map(async (book) => {
-  //       if (book.expireDayLeft <= 0) {
-  //         //delete cover image from cloudinary
-  //         book.coverImage &&
-  //           (await this.cloudinaryService.deleteImage(book.coverImage));
+      await Promise.all(
+        result.map(async (book) => {
+          if (book.expireDayLeft <= 0) {
+            //delete cover image from cloudinary
+            book.coverImage &&
+              (this.cloudinaryService.deleteImage(book.coverImage));
 
-  //         await this.booksRepository.delete(book.bookId);
+            this.booksRepository.delete(book.bookId);
 
-  //         //decrease the priority of the category
-  //         await this.categoriesService.decreasePriority(
-  //           book.category.categoryId,
-  //         );
-  //       }
-  //     });
-  //     console.log(`books deleted`);
-  //   } catch (error) {
-  //     console.error('Error deleting expired deleted books:', error);
-  //   }
-  // }
+            //decrease the priority of the category
+            this.categoriesService.decreasePriority(
+              book.category.categoryId,
+            );
+          }
+        })
+      )
+    } catch (error) {
+      console.error('Error deleting expired deleted books:', error);
+    }
+  }
 
-  // @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
-  // async updateExpiredDayLeft() {
-  //   try {
-  //     const today = new Date();
-  //     const deletedBooks = await this.booksRepository
-  //       .createQueryBuilder('books')
-  //       .withDeleted()
-  //       .leftJoinAndSelect(`books.user`, 'user')
-  //       .leftJoinAndSelect(`books.category`, 'category')
-  //       .andWhere('books.deleted_at IS NOT NULL ')
-  //       .getMany();
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async updateExpiredDayLeft() {
+    try {
+      const today = new Date();
+      const deletedBooks = await this.booksRepository
+        .createQueryBuilder('books')
+        .withDeleted()
+        .leftJoinAndSelect(`books.user`, 'user')
+        .leftJoinAndSelect(`books.category`, 'category')
+        .andWhere('books.deleted_at IS NOT NULL ')
+        .getMany();
 
-  //     deletedBooks.forEach(async (book) => {
-  //       book.expireDayLeft = differenceInDays(book.deletedExpiredDate, today);
-  //       await this.booksRepository.save(book);
-  //     });
-  //     Logger.log('Updated deletedExpiredIn for books');
-  //   } catch (error) {
-  //     console.error('Error while updating deletedExpiredIn :', error);
-  //   }
-  // }
+      deletedBooks.forEach(async (book) => {
+        book.expireDayLeft = differenceInDays(book.deletedExpiredDate, today);
+        await this.booksRepository.save(book);
+      });
+    } catch (error) {
+      console.error('Error while updating deletedExpiredIn :', error);
+    }
+  }
 }
